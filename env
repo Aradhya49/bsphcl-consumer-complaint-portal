@@ -1,0 +1,7 @@
+SECRET_KEY=f61137c5ba784f6bacb33e4472ffdcde9a4b77822ca69a34352b560d6ff1bfa4
+ADMIN_SECRET=BSPHCL-ADMIN-SECRET
+
+DATABASE_URL=mysql+pymysql://root:root@localhost/consumer_portal
+
+MAIL_USERNAME=aradhyapriya1102@gmail.com
+MAIL_PASSWORD=xprboqpqiwuifqut

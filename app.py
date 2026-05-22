@@ -12,7 +12,7 @@ def create_app(config_class=Config):
 
     # Ensure upload folder exists
     os.makedirs(app.config.get('UPLOAD_FOLDER',
-                               os.path.join(os.getcwd(), 'static', 'uploads')),
+                os.path.join(os.getcwd(), 'static', 'uploads')),
                 exist_ok=True)
 
     # Initialise extensions
@@ -33,11 +33,23 @@ def create_app(config_class=Config):
     return app
 
 
-# ── Entry point ──────────────────────────────────────────────
+# ── Load .env file for local development ─────────────────────
+def load_env():
+    env_path = os.path.join(os.path.dirname(__file__), '.env')
+    if os.path.exists(env_path):
+        with open(env_path) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, _, value = line.partition('=')
+                    os.environ.setdefault(key.strip(), value.strip())
+
+
+load_env()
 app = create_app()
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         print('[BSPHCL] Database tables created.')
-    app.run(debug=True, host='0.0.0.0', port=5002)
+    app.run(debug=True, host='0.0.0.0', port=5000)

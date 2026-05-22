@@ -1,0 +1,56 @@
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+.Python
+
+# Flask / instance
+instance/
+.webassets-cache
+
+# Environment variables / secrets
+.env
+.env.local
+*.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploaded files (don't push user uploads to GitHub)
+static/uploads/
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Migration versions (optional — remove this line if you want to track migrations)
+migrations/versions/
+
+# PDF output
+output.pdf
+*.pdf
+
+# One-time scripts
+update_admin_password.py
