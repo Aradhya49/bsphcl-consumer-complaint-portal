@@ -8,7 +8,7 @@ class Config:
     # ── Database ──────────────────────────────────────────────
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         'DATABASE_URL',
-        'mysql+pymysql://root:YOUR_PASSWORD@localhost/consumer_portal'
+        'mysql+pymysql://root:@localhost/consumer_portal'
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
