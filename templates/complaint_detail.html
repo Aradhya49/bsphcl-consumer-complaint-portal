@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block title %}Complaint Details – CMP{{ '%04d' % complaint.id }} – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>Complaint Details &mdash; CMP{{ '%04d' % complaint.id }}</h2>
+  <span class="bc">
+    <a href="{{ url_for('main_bp.dashboard') }}">Dashboard</a> &rsaquo;
+    <a href="{{ url_for('main_bp.complaint_history') }}">My Complaints</a> &rsaquo;
+    CMP{{ '%04d' % complaint.id }}
+  </span>
+</div>
+
+<!-- Complaint Info -->
+<div class="card">
+  <div class="ch flex jb ac">
+    <span>Complaint Information</span>
+    <a href="{{ url_for('main_bp.download_receipt', complaint_id=complaint.id) }}"
+       class="btn btn-outline btn-sm">&#11015; Download Receipt (PDF)</a>
+  </div>
+  <div class="cb">
+
+    <div class="receipt">
+      <div class="receipt-row">
+        <div class="rl">Complaint ID</div>
+        <div class="rv"><strong>CMP{{ '%04d' % complaint.id }}</strong></div>
+      </div>
+      <div class="receipt-row">
+        <div class="rl">Complaint Type</div>
+        <div class="rv">{{ complaint.complaint_type }}</div>
+      </div>
+      <div class="receipt-row">
+        <div class="rl">Subcategory</div>
+        <div class="rv">{{ complaint.subcategory or '—' }}</div>
+      </div>
+      <div class="receipt-row">
+        <div class="rl">Date Filed</div>
+        <div class="rv">{{ complaint.created_at.strftime('%d %B %Y, %I:%M %p') if complaint.created_at else '—' }}</div>
+      </div>
+      <div class="receipt-row">
+        <div class="rl">Current Status</div>
+        <div class="rv">
+          {% if complaint.status == 'Resolved' %}<span class="badge badge-resolved">Resolved</span>
+          {% elif complaint.status == 'Under Review' %}<span class="badge badge-review">Under Review</span>
+          {% else %}<span class="badge badge-pending">Pending</span>{% endif %}
+        </div>
+      </div>
+      <div class="receipt-row">
+        <div class="rl">Attachment</div>
+        <div class="rv">
+          {% if complaint.attachment %}
+            <a href="{{ url_for('static', filename='uploads/' ~ complaint.attachment) }}" target="_blank">
+              &#128206; View Attachment
+            </a>
+          {% else %}No attachment{% endif %}
+        </div>
+      </div>
+      <div class="receipt-row">
+        <div class="rl">Description</div>
+        <div class="rv" style="line-height:1.6;">{{ complaint.description }}</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Actions -->
+{% if complaint.status != 'Resolved' %}
+<div class="card">
+  <div class="ch">Actions</div>
+  <div class="cb flex gap8 fw">
+    <form method="POST" action="{{ url_for('main_bp.close_complaint', complaint_id=complaint.id) }}"
+          onsubmit="return confirm('Mark this complaint as Resolved?')">
+      <button type="submit" class="btn btn-success btn-sm">Mark as Resolved</button>
+    </form>
+  </div>
+</div>
+{% else %}
+<div class="card">
+  <div class="ch">Actions</div>
+  <div class="cb flex gap8 fw">
+    <form method="POST" action="{{ url_for('main_bp.reopen_complaint', complaint_id=complaint.id) }}"
+          onsubmit="return confirm('Reopen this complaint?')">
+      <button type="submit" class="btn btn-warning btn-sm">Reopen Complaint</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- Conversation Thread -->
+<div class="card">
+  <div class="ch">Conversation / Replies</div>
+  <div class="cb">
+
+    {% if complaint.replies %}
+    <div class="thread mb16">
+      {% for reply in complaint.replies %}
+      <div class="thread-msg {% if reply.role == 'admin' %}by-admin{% else %}by-user{% endif %}">
+        <div class="meta">
+          <span class="who">{% if reply.role == 'admin' %}BSPHCL Admin{% else %}You{% endif %}</span>
+          &nbsp;&nbsp;&mdash;&nbsp;&nbsp;
+          {{ reply.timestamp.strftime('%d %b %Y, %I:%M %p') if reply.timestamp else '' }}
+        </div>
+        <div class="body">{{ reply.message }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="info-note mb16">No replies yet. Admin will respond to your complaint shortly.</div>
+    {% endif %}
+
+    <!-- User reply form -->
+    <div class="card" style="margin-bottom:0; border-top-color:#1a4d7a;">
+      <div class="ch" style="background:#e8f0fb; color:#0a3772;">Add Additional Information / Follow-up</div>
+      <div class="cb">
+        <form method="POST" action="{{ url_for('main_bp.add_complaint_info', complaint_id=complaint.id) }}">
+          <div class="fg">
+            <label for="message">Your Message <span class="req">*</span></label>
+            <textarea id="message" name="message" class="fc" rows="4"
+                      placeholder="Type your follow-up message or additional information here..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Submit Reply</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="flex gap8 mt8">
+  <a href="{{ url_for('main_bp.complaint_history') }}" class="btn btn-outline btn-sm">&larr; Back to My Complaints</a>
+</div>
+
+{% endblock %}

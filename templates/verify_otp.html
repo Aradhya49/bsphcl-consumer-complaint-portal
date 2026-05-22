@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Verify OTP – BSPHCL{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-box">
+
+    <div class="auth-hdr">
+      <h3>&#128241; OTP Verification</h3>
+      <p>Enter the One-Time Password sent to your email</p>
+    </div>
+
+    <div class="auth-body">
+
+      <div class="info-note">
+        A 6-digit OTP has been sent to your registered email address.
+        The OTP is valid for <strong>60 seconds</strong> only.
+      </div>
+
+      <form method="POST" action="{{ url_for('main_bp.verify_otp') }}">
+        <div class="fg">
+          <label for="otp">Enter OTP <span class="req">*</span></label>
+          <input type="text" id="otp" name="otp" class="fc" placeholder="6-digit OTP"
+                 maxlength="6" pattern="[0-9]{6}" required autofocus
+                 style="letter-spacing:4px; font-size:18px; text-align:center;">
+          <div class="fc-hint">Enter the 6-digit code sent to your email.</div>
+        </div>
+
+        <div class="fg mt12">
+          <button type="submit" class="btn btn-primary w100">Verify OTP</button>
+        </div>
+      </form>
+
+      <div class="tc mt12" style="font-size:12px;">
+        Did not receive OTP?
+        <a href="{{ url_for('main_bp.forgot_password') }}">Resend OTP</a>
+      </div>
+
+    </div>
+
+    <div class="auth-foot">
+      <a href="{{ url_for('main_bp.login') }}">&larr; Back to Login</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

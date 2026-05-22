@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+{% block title %}Help Desk – BSPHCL Consumer Portal{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>&#128222; Help Desk</h2>
+  <span class="bc">
+    <a href="{{ url_for('main_bp.dashboard') }}">Dashboard</a> &rsaquo; Help Desk
+  </span>
+</div>
+
+<!-- Track Complaint -->
+<div class="card">
+  <div class="ch" style="background:#1a3a6b; color:#fff;">
+    &#128269; Track Your Complaint Status
+  </div>
+  <div class="cb">
+    <div class="info-note">
+      Enter your <strong>Complaint ID</strong> and <strong>Consumer Number</strong>
+      to check the current status of your complaint instantly.
+    </div>
+
+    <div id="track-result" style="display:none;"></div>
+
+    <div class="g2">
+      <div class="fg">
+        <label for="track-cid">Complaint ID <span class="req">*</span></label>
+        <input type="text" id="track-cid" class="fc"
+               placeholder="e.g. CMP0001" maxlength="10"
+               style="text-transform:uppercase;">
+        <div class="fc-hint">Format: CMP followed by 4 digits (e.g. CMP0001)</div>
+      </div>
+      <div class="fg">
+        <label for="track-consumer">Consumer Number <span class="req">*</span></label>
+        <input type="text" id="track-consumer" class="fc"
+               placeholder="Your Consumer ID (e.g. CNSMR000001)">
+        <div class="fc-hint">
+          Your Consumer ID is shown on your
+          <a href="{{ url_for('main_bp.profile') }}">Profile page</a>.
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap8 mt8">
+      <button class="btn btn-primary btn-sm" onclick="trackComplaint()">
+        &#128269; Track Complaint
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="clearTrack()">Clear</button>
+    </div>
+  </div>
+</div>
+
+<!-- FAQs -->
+<div class="card">
+  <div class="ch" style="background:#1a3a6b; color:#fff;">
+    &#10067; Frequently Asked Questions (FAQ)
+  </div>
+  <div class="cb">
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>How do I file a complaint?</span>
+        <span class="faq-arrow">&#9660;</span>
+      </div>
+      <div class="faq-a">
+        Log in and go to <strong>File Complaint</strong> from the navigation menu or dashboard.
+        Choose the correct category, describe the issue clearly with your consumer number and
+        relevant details. You will receive a unique Complaint ID upon successful submission.
+        You can also attach supporting documents such as photos or bill copies.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Can a submitted complaint be edited?</span>
+        <span class="faq-arrow">&#9660;</span>
+      </div>
+      <div class="faq-a">
+        Yes, but only while the complaint is in <strong>Pending</strong> status.
+        Once review begins, the complaint is locked to preserve the official record.
+        You can however add follow-up information through the reply/conversation section
+        on the complaint detail page.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>What documents should I attach for billing issues?</span>
+        <span class="faq-arrow">&#9660;</span>
+      </div>
+      <div class="faq-a">
+        Upload your <strong>latest bill copy</strong>, a meter photo if available,
+        and a brief note describing the discrepancy. Accepted formats are
+        JPG, JPEG, PNG, and PDF. Maximum file size is 5 MB.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>When should the Safety Hazard category be selected?</span>
+        <span class="faq-arrow">&#9660;</span>
+      </div>
+      <div class="faq-a">
+        Use it for <strong>exposed wires, sparking equipment, fallen lines</strong>,
+        or any situation posing immediate danger to people or property.
+        For life-threatening emergencies, call <strong>1912</strong> immediately
+        rather than waiting for an online response.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>How long does it take to resolve a complaint?</span>
+        <span class="faq-arrow">&#9660;</span>
+      </div>
+      <div class="faq-a">
+        Resolution times vary by complaint type:
+        <ul style="margin:8px 0 0 20px; line-height:1.8;">
+          <li><strong>Power Outage / Safety Hazard:</strong> 24–48 hours</li>
+          <li><strong>Meter Problem:</strong> 3–5 working days</li>
+          <li><strong>Billing Issue:</strong> 5–7 working days</li>
+          <li><strong>Connection Request:</strong> 7–15 working days</li>
+          <li><strong>General Query:</strong> 5–10 working days</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>How do I check the status of my complaint?</span>
+        <span class="faq-arrow">&#9660;</span>
+      </div>
+      <div class="faq-a">
+        Use the <strong>Track Complaint</strong> section above on this page.
+        Alternatively go to <strong>My Complaints</strong> in the navigation menu
+        to see all your complaints and their current statuses.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>What if I forgot my Consumer ID?</span>
+        <span class="faq-arrow">&#9660;</span>
+      </div>
+      <div class="faq-a">
+        Your Consumer ID is shown on your <strong>Profile</strong> page after logging in.
+        It follows the format <strong>CNSMR</strong> followed by 6 digits (e.g. CNSMR000001).
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Safety & Outage Guidance -->
+<div class="card">
+  <div class="ch" style="background:#8b0000; color:#fff;">
+    &#9888; Safety &amp; Outage Guidance
+  </div>
+  <div class="cb">
+    <div class="info-note" style="background:#fff0f0; border-left-color:#8b0000; margin-bottom:14px;">
+      &#9888;&nbsp; <strong>For life-threatening electrical emergencies,
+      call 1912 immediately. Do not wait.</strong>
+    </div>
+    <table class="tbl">
+      <thead>
+        <tr><th style="width:40px;">#</th><th>Safety Guideline</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="tc bold" style="color:#8b0000;">1</td>
+          <td><strong>Never touch broken, hanging, or fallen power lines.</strong>
+          Keep bystanders at a safe distance and call <strong>1912</strong> immediately.
+          Do not attempt to move or repair lines yourself.</td>
+        </tr>
+        <tr>
+          <td class="tc bold" style="color:#8b0000;">2</td>
+          <td><strong>Switch off appliances and unplug sensitive electronics</strong>
+          during voltage fluctuations or storm-related outages to prevent damage
+          from sudden power surges when supply resumes.</td>
+        </tr>
+        <tr>
+          <td class="tc bold" style="color:#8b0000;">3</td>
+          <td><strong>Dial 1912 for urgent electricity failure and hazard reporting.</strong>
+          This helpline is available <strong>24&times;7, toll-free</strong>.
+          Keep your Consumer ID ready for faster service.</td>
+        </tr>
+        <tr>
+          <td class="tc bold" style="color:#8b0000;">4</td>
+          <td><strong>Keep your Complaint ID and Consumer Number ready</strong>
+          when contacting support for faster identification and resolution.</td>
+        </tr>
+        <tr>
+          <td class="tc bold" style="color:#8b0000;">5</td>
+          <td><strong>Do not tamper with electricity meters</strong> or attempt
+          unauthorised connections. This is a punishable offence under the
+          Electricity Act and poses serious safety risks.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Consumer Support Information -->
+<div class="card">
+  <div class="ch" style="background:#1a3a6b; color:#fff;">
+    &#128222; Consumer Support Information
+  </div>
+  <div class="cb">
+    <div class="g2">
+
+      <table class="tbl">
+        <thead><tr><th colspan="2">&#128222; Contact Information</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="bold" style="background:#eef1f7; color:var(--primary); width:160px;">Emergency Helpline</td>
+            <td><strong style="font-size:16px; color:#8b0000;">1912</strong> &nbsp;(24×7, Toll-Free)</td>
+          </tr>
+          <tr>
+            <td class="bold" style="background:#eef1f7; color:var(--primary);">Official Website</td>
+            <td><a href="https://www.bsphcl.co.in" target="_blank">www.bsphcl.co.in</a></td>
+          </tr>
+          <tr>
+            <td class="bold" style="background:#eef1f7; color:var(--primary);">Complaint Portal</td>
+            <td>This portal (Online 24×7)</td>
+          </tr>
+          <tr>
+            <td class="bold" style="background:#eef1f7; color:var(--primary);">Head Office</td>
+            <td>Vidyut Bhawan, Bailey Road, Patna – 800 001</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div>
+        <table class="tbl">
+          <thead><tr><th colspan="2">&#128221; Required Information for Support</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="bold" style="background:#eef1f7; color:var(--primary); width:160px;">Complaint tracking</td>
+              <td>Complaint ID + Consumer Number</td>
+            </tr>
+            <tr>
+              <td class="bold" style="background:#eef1f7; color:var(--primary);">Billing queries</td>
+              <td>Consumer Number + Latest Bill Copy</td>
+            </tr>
+            <tr>
+              <td class="bold" style="background:#eef1f7; color:var(--primary);">New connection</td>
+              <td>Address proof + Identity proof</td>
+            </tr>
+            <tr>
+              <td class="bold" style="background:#eef1f7; color:var(--primary);">Meter issues</td>
+              <td>Consumer Number + Meter photo</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="info-note mt12">
+          &#128222;&nbsp; Please contact your <strong>local electricity office</strong>
+          for in-person assistance.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.faq-item { border:1px solid var(--border); margin-bottom:8px; }
+.faq-q {
+  background:#eef1f7; padding:11px 14px; cursor:pointer;
+  font-weight:bold; font-size:13px; color:var(--primary);
+  display:flex; justify-content:space-between; align-items:center;
+  user-select:none;
+}
+.faq-q:hover { background:#dce6f5; }
+.faq-a {
+  display:none; padding:12px 14px; font-size:13px;
+  line-height:1.7; border-top:1px solid var(--border); background:#fff;
+}
+.faq-item.open .faq-a    { display:block; }
+.faq-item.open .faq-arrow { transform:rotate(180deg); }
+.faq-arrow { transition:transform 0.2s; display:inline-block; }
+#track-result .track-box {
+  border:1px solid var(--border); border-top:4px solid var(--primary);
+  padding:14px; margin-bottom:14px; background:#fff;
+}
+#track-result .track-box.found-resolved { border-top-color:var(--success); }
+#track-result .track-box.found-pending  { border-top-color:#b8860b; }
+#track-result .track-box.found-review   { border-top-color:#1a4d7a; }
+#track-result .track-box.not-found      { border-top-color:var(--accent); }
+</style>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleFaq(el) {
+  el.closest('.faq-item').classList.toggle('open');
+}
+
+function trackComplaint() {
+  var cidRaw    = document.getElementById('track-cid').value.trim().toUpperCase();
+  var consumer  = document.getElementById('track-consumer').value.trim().toUpperCase();
+  var resultDiv = document.getElementById('track-result');
+
+  if (!cidRaw || !consumer) {
+    alert('Please enter both Complaint ID and Consumer Number.');
+    return;
+  }
+
+  var numId = parseInt(cidRaw.replace(/^CMP0*/i, '') || '0', 10);
+
+  fetch('/api/track?cid=' + encodeURIComponent(numId) +
+        '&consumer=' + encodeURIComponent(consumer))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      resultDiv.style.display = 'block';
+      if (data.found) {
+        var sc = {'Resolved':'found-resolved','Under Review':'found-review',
+                  'Pending':'found-pending'}[data.status] || '';
+        var bc = {'Resolved':'badge-resolved','Under Review':'badge-review',
+                  'Pending':'badge-pending'}[data.status] || 'badge-pending';
+        resultDiv.innerHTML =
+          '<div class="track-box ' + sc + '">' +
+          '<table class="tbl">' +
+          '<tr><td class="bold" style="background:#eef1f7;color:var(--primary);width:160px;">Complaint ID</td>' +
+          '<td><strong>CMP' + String(data.id).padStart(4,'0') + '</strong></td></tr>' +
+          '<tr><td class="bold" style="background:#eef1f7;color:var(--primary);">Type</td>' +
+          '<td>' + (data.type||'—') + '</td></tr>' +
+          '<tr><td class="bold" style="background:#eef1f7;color:var(--primary);">Subcategory</td>' +
+          '<td>' + (data.subcategory||'—') + '</td></tr>' +
+          '<tr><td class="bold" style="background:#eef1f7;color:var(--primary);">Date Filed</td>' +
+          '<td>' + (data.date||'—') + '</td></tr>' +
+          '<tr><td class="bold" style="background:#eef1f7;color:var(--primary);">Status</td>' +
+          '<td><span class="badge ' + bc + '">' + data.status + '</span></td></tr>' +
+          '</table></div>';
+      } else {
+        resultDiv.innerHTML =
+          '<div class="track-box not-found">' +
+          '<strong style="color:var(--accent);">&#9888; Complaint Not Found</strong><br>' +
+          '<span class="muted">No complaint found. Please check details and try again.</span></div>';
+      }
+    })
+    .catch(function() {
+      resultDiv.style.display = 'block';
+      resultDiv.innerHTML = '<div class="alert alert-danger">Unable to fetch. Please try again.</div>';
+    });
+}
+
+function clearTrack() {
+  document.getElementById('track-cid').value      = '';
+  document.getElementById('track-consumer').value = '';
+  document.getElementById('track-result').style.display = 'none';
+  document.getElementById('track-result').innerHTML     = '';
+}
+</script>
+{% endblock %}

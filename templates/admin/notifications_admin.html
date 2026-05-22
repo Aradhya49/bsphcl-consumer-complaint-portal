@@ -1,0 +1,109 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Notifications – Admin – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>&#128276; Admin Notifications</h2>
+  <span class="bc">Admin &rsaquo; Notifications</span>
+</div>
+
+<!-- Summary -->
+<div class="stats" style="grid-template-columns: repeat(3,1fr); margin-bottom:14px;">
+  <div class="stat blue" style="padding:10px;">
+    <span class="sn" style="font-size:20px;">{{ notifications|length }}</span>
+    <div class="sl">Total</div>
+  </div>
+  <div class="stat red" style="padding:10px;">
+    <span class="sn" style="font-size:20px;">{{ notifications|selectattr('is_read','eq',False)|list|length }}</span>
+    <div class="sl">Unread</div>
+  </div>
+  <div class="stat green" style="padding:10px;">
+    <span class="sn" style="font-size:20px;">{{ notifications|selectattr('is_read','eq',True)|list|length }}</span>
+    <div class="sl">Read</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch flex jb ac">
+    <span>All Notifications ({{ notifications|length }})</span>
+    {% if notifications %}
+    <span class="muted" style="font-size:11px;">All marked as read on page load</span>
+    {% endif %}
+  </div>
+  <div class="cb" style="padding:0;">
+
+    {% if notifications %}
+      {% for n in notifications %}
+      <div class="notif-row {% if not n.is_read %}notif-unread{% endif %}">
+
+        <div class="notif-icon
+          {% if n.notif_type == 'new_complaint' %}icon-complaint
+          {% elif n.notif_type == 'user_reply' %}icon-reply
+          {% elif n.notif_type == 'new_user' %}icon-user
+          {% else %}icon-default{% endif %}">
+          {% if n.notif_type == 'new_complaint' %}&#128196;
+          {% elif n.notif_type == 'user_reply' %}&#128172;
+          {% elif n.notif_type == 'new_user' %}&#128100;
+          {% else %}&#128276;{% endif %}
+        </div>
+
+        <div class="notif-content">
+          <div class="notif-title">
+            {{ n.title }}
+            {% if not n.is_read %}
+            <span class="badge badge-pending" style="font-size:10px; margin-left:6px;">NEW</span>
+            {% endif %}
+          </div>
+          <div class="notif-msg">{{ n.message }}</div>
+          <div class="notif-time">
+            &#128336; {{ n.created_at.strftime('%d %b %Y, %I:%M %p') if n.created_at else '—' }}
+          </div>
+        </div>
+
+        {% if n.complaint_id %}
+        <div class="notif-action">
+          <a href="{{ url_for('admin.complaint_detail_admin', complaint_id=n.complaint_id) }}"
+             class="btn btn-primary btn-xs">View Complaint</a>
+        </div>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+
+    {% else %}
+      <div class="tc" style="padding:40px 0;">
+        <div style="font-size:40px; color:#c5ccd6; margin-bottom:12px;">&#128276;</div>
+        <p class="muted">No notifications yet.</p>
+        <p class="muted mt8">You will receive notifications when consumers file complaints,
+        register on the portal, or add information to existing complaints.</p>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<style>
+.notif-row {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 14px 16px; border-bottom: 1px solid var(--border); background: #fff;
+}
+.notif-row:last-child { border-bottom: none; }
+.notif-unread { background: #fff8f0; border-left: 4px solid var(--accent); }
+.notif-icon {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.icon-complaint { background: #fff3cd; color: #856404; }
+.icon-reply     { background: #cfe2ff; color: #0a3772; }
+.icon-user      { background: #d1e7dd; color: #0a4d1e; }
+.icon-default   { background: #e8edf5; color: var(--primary); }
+.notif-content  { flex: 1; }
+.notif-title    { font-weight: bold; font-size: 13px; color: var(--primary); margin-bottom: 4px; }
+.notif-msg      { font-size: 13px; color: var(--text-dark); line-height: 1.6; margin-bottom: 5px; }
+.notif-time     { font-size: 11px; color: var(--text-muted); }
+.notif-action   { flex-shrink: 0; }
+</style>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}My Complaints – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>My Complaint History</h2>
+  <span class="bc"><a href="{{ url_for('main_bp.dashboard') }}">Dashboard</a> &rsaquo; Complaint History</span>
+</div>
+
+<!-- Summary Bar -->
+<div class="stats" style="grid-template-columns: repeat(4, 1fr); margin-bottom:16px;">
+  <div class="stat blue" style="padding:10px;">
+    <span class="sn" style="font-size:22px;">{{ complaints | length }}</span>
+    <div class="sl">Total</div>
+  </div>
+  <div class="stat amber" style="padding:10px;">
+    <span class="sn" style="font-size:22px;">{{ complaints | selectattr('status','eq','Pending') | list | length }}</span>
+    <div class="sl">Pending</div>
+  </div>
+  <div class="stat" style="padding:10px; border-top-color:#1a4d7a;">
+    <span class="sn" style="font-size:22px; color:#1a4d7a;">{{ complaints | selectattr('status','eq','Under Review') | list | length }}</span>
+    <div class="sl">Under Review</div>
+  </div>
+  <div class="stat green" style="padding:10px;">
+    <span class="sn" style="font-size:22px;">{{ complaints | selectattr('status','eq','Resolved') | list | length }}</span>
+    <div class="sl">Resolved</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch flex jb ac">
+    <span>All Complaints ({{ complaints | length }})</span>
+    <a href="{{ url_for('main_bp.complaint') }}" class="btn btn-primary btn-sm">+ File New Complaint</a>
+  </div>
+  <div class="cb">
+
+    {% if complaints %}
+
+    <!-- Filter row -->
+    <div class="search-bar mb12">
+      <select id="filter-status" class="fc" style="width:auto; min-width:160px;">
+        <option value="">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="Under Review">Under Review</option>
+        <option value="Resolved">Resolved</option>
+      </select>
+      <select id="filter-type" class="fc" style="width:auto; min-width:180px;">
+        <option value="">All Types</option>
+        <option value="Billing Issue">Billing Issue</option>
+        <option value="Power Outage">Power Outage</option>
+        <option value="Meter Problem">Meter Problem</option>
+        <option value="Connection Request">Connection Request</option>
+        <option value="Others">Others</option>
+      </select>
+    </div>
+
+    <div id="complaints-list">
+      {% for c in complaints %}
+      <div class="cmp-row st-{{ c.status | lower | replace(' ', '-') }}"
+           data-status="{{ c.status }}" data-type="{{ c.complaint_type }}">
+        <div>
+          <div class="ctype">{{ c.complaint_type }}{% if c.subcategory %} &mdash; <span style="font-weight:normal;font-size:13px;">{{ c.subcategory }}</span>{% endif %}</div>
+          <div class="cmeta">
+            Complaint ID: <strong>CMP{{ '%04d' % c.id }}</strong>
+            &nbsp;&nbsp;|&nbsp;&nbsp;
+            Filed: {{ c.created_at.strftime('%d %b %Y, %I:%M %p') if c.created_at else '—' }}
+            {% if c.attachment %}
+            &nbsp;&nbsp;|&nbsp;&nbsp; &#128206; Attachment
+            {% endif %}
+          </div>
+          <div class="cmeta mt8" style="max-width:560px; line-height:1.5;">
+            {{ c.description[:120] }}{% if c.description|length > 120 %}...{% endif %}
+          </div>
+        </div>
+        <div class="flex gap8 ac fw" style="flex-shrink:0;">
+          {% if c.status == 'Resolved' %}<span class="badge badge-resolved">Resolved</span>
+          {% elif c.status == 'Under Review' %}<span class="badge badge-review">Under Review</span>
+          {% else %}<span class="badge badge-pending">Pending</span>{% endif %}
+          <a href="{{ url_for('main_bp.complaint_detail', complaint_id=c.id) }}" class="btn btn-outline btn-sm">View Details</a>
+          <a href="{{ url_for('main_bp.download_receipt', complaint_id=c.id) }}" class="btn btn-outline btn-sm">Download Receipt</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="tc" style="padding:30px 0;">
+      <div style="font-size:32px; color:#c5ccd6; margin-bottom:12px;">&#128196;</div>
+      <p class="muted">You have not filed any complaints yet.</p>
+      <a href="{{ url_for('main_bp.complaint') }}" class="btn btn-primary mt12" style="display:inline-block;">File Your First Complaint</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Client-side filter
+var statusF = document.getElementById('filter-status');
+var typeF   = document.getElementById('filter-type');
+function applyFilter() {
+  var st = statusF.value; var ty = typeF.value;
+  document.querySelectorAll('#complaints-list .cmp-row').forEach(function(row) {
+    var show = (!st || row.dataset.status === st) && (!ty || row.dataset.type === ty);
+    row.style.display = show ? '' : 'none';
+  });
+}
+if (statusF) statusF.addEventListener('change', applyFilter);
+if (typeF)   typeF.addEventListener('change', applyFilter);
+</script>
+{% endblock %}

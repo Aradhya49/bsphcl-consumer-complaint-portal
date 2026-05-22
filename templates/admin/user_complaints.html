@@ -1,0 +1,116 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}User Complaints – {{ user.name }} – Admin – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>Complaints by {{ user.name }}</h2>
+  <span class="bc">
+    <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a> &rsaquo;
+    <a href="{{ url_for('admin.manage_users') }}">Manage Users</a> &rsaquo;
+    {{ user.name }}
+  </span>
+</div>
+
+<!-- User Info Card -->
+<div class="card mb12">
+  <div class="ch">Consumer Information</div>
+  <div class="cb">
+    <div class="flex gap12 ac fw">
+
+      <!-- Profile pic if exists -->
+      {% if user.profile_pic %}
+      <img src="{{ url_for('static', filename='uploads/profiles/' ~ user.profile_pic) }}"
+           style="width:48px; height:48px; border-radius:50%; object-fit:cover;
+                  border:2px solid var(--primary); flex-shrink:0;">
+      {% else %}
+      <div style="width:48px; height:48px; border-radius:50%;
+                  background:var(--primary); border:2px solid var(--primary);
+                  display:flex; align-items:center; justify-content:center;
+                  color:#fff; font-size:20px; font-weight:bold; flex-shrink:0;">
+        {{ user.name[0].upper() if user.name else 'U' }}
+      </div>
+      {% endif %}
+
+      <div style="flex:1;">
+        <div class="bold">{{ user.name }}</div>
+        <div class="muted">{{ user.email }} &nbsp;|&nbsp; {{ user.mobile }}</div>
+        {% if user.district %}
+        <div class="muted">District: {{ user.district }}</div>
+        {% endif %}
+      </div>
+
+      <div class="flex gap8 ac fw" style="flex-shrink:0;">
+        <span class="badge {% if user.role == 'admin' %}badge-admin{% elif user.role == 'staff' %}badge-staff{% else %}badge-resolved{% endif %}">
+          {{ user.role | upper }}
+        </span>
+        <span class="badge" style="background:#e8edf5; color:var(--primary); border:1px solid var(--border);">
+          {{ user.consumer_id }}
+        </span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Complaints Table -->
+<div class="card">
+  <div class="ch">All Complaints by {{ user.name }} ({{ complaints|length }})</div>
+  <div class="cb">
+
+    {% if complaints %}
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Complaint ID</th>
+            <th>Type</th>
+            <th>Subcategory</th>
+            <th>Date Filed</th>
+            <th>Attachment</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in complaints %}
+          <tr>
+            <td><strong>CMP{{ '%04d' % c.id }}</strong></td>
+            <td>{{ c.complaint_type }}</td>
+            <td class="muted">{{ c.subcategory or '—' }}</td>
+            <td class="muted">{{ c.created_at.strftime('%d-%m-%Y') if c.created_at else '—' }}</td>
+            <td class="tc">
+              {% if c.attachment %}&#128206;{% else %}&mdash;{% endif %}
+            </td>
+            <td>
+              {% if c.status == 'Resolved' %}
+                <span class="badge badge-resolved">Resolved</span>
+              {% elif c.status == 'Under Review' %}
+                <span class="badge badge-review">Under Review</span>
+              {% else %}
+                <span class="badge badge-pending">Pending</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('admin.complaint_detail_admin', complaint_id=c.id) }}"
+                 class="btn btn-primary btn-xs">View</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="tc muted" style="padding:20px 0;">
+      This user has not filed any complaints yet.
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline btn-sm">
+  &larr; Back to Manage Users
+</a>
+
+{% endblock %}

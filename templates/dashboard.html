@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard – BSPHCL Consumer Portal{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>Consumer Dashboard</h2>
+  <span class="bc"><a href="{{ url_for('main_bp.home') }}">Home</a> &rsaquo; Dashboard</span>
+</div>
+
+<!-- Welcome -->
+<div class="card mb12">
+  <div class="cb">
+    <div class="flex jb ac fw gap8">
+      <div>
+        <strong>Welcome, {{ session.get('name', 'Consumer') }}</strong>
+        &nbsp;&mdash;&nbsp;
+        <span class="muted">Consumer ID: {{ g.user.consumer_id if g.user else 'N/A' }}</span>
+        {% if g.user and g.user.district %}
+        &nbsp;|&nbsp; <span class="muted">District: {{ g.user.district }}</span>
+        {% endif %}
+      </div>
+      <a href="{{ url_for('main_bp.complaint') }}" class="btn btn-primary btn-sm">+ File New Complaint</a>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat blue">
+    <span class="sn">{{ total }}</span>
+    <div class="sl">Total Complaints</div>
+  </div>
+  <div class="stat amber">
+    <span class="sn">{{ pending }}</span>
+    <div class="sl">Pending</div>
+  </div>
+  <div class="stat" style="border-top-color:#1a4d7a;">
+    <span class="sn" style="color:#1a4d7a;">{{ under_review }}</span>
+    <div class="sl">Under Review</div>
+  </div>
+  <div class="stat green">
+    <span class="sn">{{ resolved }}</span>
+    <div class="sl">Resolved</div>
+  </div>
+  <div class="stat">
+    <span class="sn">{{ last_7_days }}</span>
+    <div class="sl">Last 7 Days</div>
+  </div>
+  <div class="stat">
+    <span class="sn">{{ with_attachments }}</span>
+    <div class="sl">With Attachments</div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="g2">
+  <div class="card">
+    <div class="ch">Complaint Status Overview</div>
+    <div class="cb tc">
+      <canvas id="statusChart" height="200"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch">Complaints by Type</div>
+    <div class="cb tc">
+      <canvas id="typeChart" height="200"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Complaints -->
+<div class="card">
+  <div class="ch flex jb ac">
+    <span>Recent Complaints</span>
+    <a href="{{ url_for('main_bp.complaint_history') }}" class="btn btn-outline btn-xs">View All</a>
+  </div>
+  <div class="cb">
+    {% if recent_complaints %}
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Complaint ID</th><th>Type</th><th>Subcategory</th>
+            <th>Date</th><th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in recent_complaints %}
+          <tr>
+            <td>CMP{{ '%04d' % c.id }}</td>
+            <td>{{ c.complaint_type }}</td>
+            <td class="muted">{{ c.subcategory or '—' }}</td>
+            <td class="muted">{{ c.created_at.strftime('%d-%m-%Y') if c.created_at else '—' }}</td>
+            <td>
+              {% if c.status == 'Resolved' %}<span class="badge badge-resolved">Resolved</span>
+              {% elif c.status == 'Under Review' %}<span class="badge badge-review">Under Review</span>
+              {% else %}<span class="badge badge-pending">Pending</span>{% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('main_bp.complaint_detail', complaint_id=c.id) }}"
+                 class="btn btn-outline btn-xs">View</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="tc muted" style="padding:20px 0;">
+      No complaints filed yet.
+      <a href="{{ url_for('main_bp.complaint') }}">File your first complaint</a>.
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Charts ──────────────────────────────────────────────────
+var sCtx = document.getElementById('statusChart');
+if (sCtx) {
+  new Chart(sCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Pending', 'Under Review', 'Resolved'],
+      datasets: [{
+        data: [{{ pending }}, {{ under_review }}, {{ resolved }}],
+        backgroundColor: ['#b8860b', '#1a4d7a', '#1a6b2e'],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
+      cutout: '55%'
+    }
+  });
+}
+var tCtx = document.getElementById('typeChart');
+if (tCtx) {
+  new Chart(tCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ complaint_types.keys() | list | tojson }},
+      datasets: [{
+        label: 'Complaints',
+        data: {{ complaint_types.values() | list | tojson }},
+        backgroundColor: '#1a3a6b', borderWidth: 1
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } } },
+        x: { ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

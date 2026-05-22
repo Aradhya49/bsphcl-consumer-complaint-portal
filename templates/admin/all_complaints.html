@@ -1,0 +1,188 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}All Complaints – Admin – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>Complaint Records</h2>
+  <span class="bc">Admin &rsaquo; Complaints</span>
+</div>
+
+<!-- Stats Row -->
+<div class="stats" style="grid-template-columns: repeat(4,1fr); margin-bottom:14px;">
+  <div class="stat blue" style="padding:10px;">
+    <span class="sn" style="font-size:20px;">{{ complaints|length }}</span>
+    <div class="sl">Total Records</div>
+  </div>
+  <div class="stat amber" style="padding:10px;">
+    <span class="sn" style="font-size:20px;">{{ complaints|selectattr('status','eq','Pending')|list|length }}</span>
+    <div class="sl">Pending</div>
+  </div>
+  <div class="stat green" style="padding:10px;">
+    <span class="sn" style="font-size:20px;">{{ complaints|selectattr('status','eq','Resolved')|list|length }}</span>
+    <div class="sl">Resolved</div>
+  </div>
+  <div class="stat" style="padding:10px; border-top-color:#1a4d7a;">
+    <span class="sn" style="font-size:20px; color:#1a4d7a;">{{ complaints|selectattr('status','eq','Under Review')|list|length }}</span>
+    <div class="sl">In Review</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="ch flex jb ac">
+    <span>Complaint Records</span>
+  </div>
+  <div class="cb">
+
+    <!-- Filters -->
+    <div class="search-bar mb12" style="flex-wrap:wrap; gap:8px;">
+      <input type="text" id="srch" placeholder="Search by Complaint ID / Consumer..."
+             class="fc" style="max-width:260px;">
+      <select id="f-status" class="fc" style="max-width:140px;">
+        <option value="">Status</option>
+        <option value="Pending">Pending</option>
+        <option value="Under Review">Under Review</option>
+        <option value="Resolved">Resolved</option>
+      </select>
+      <select id="f-priority" class="fc" style="max-width:130px;">
+        <option value="">Priority</option>
+        <option value="High">High</option>
+        <option value="Normal">Normal</option>
+      </select>
+      <select id="f-type" class="fc" style="max-width:150px;">
+        <option value="">Category</option>
+        <option value="Billing Issue">Billing Issue</option>
+        <option value="Power Outage">Power Outage</option>
+        <option value="Meter Problem">Meter Problem</option>
+        <option value="Connection Request">Connection Request</option>
+        <option value="Others">Others</option>
+      </select>
+      <select id="f-district" class="fc" style="max-width:130px;">
+        <option value="">District</option>
+        <option>Patna</option><option>Gaya</option><option>Muzaffarpur</option>
+        <option>Bhagalpur</option><option>Darbhanga</option><option>Others</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="filterTable()">Filter</button>
+      <button class="btn btn-outline btn-sm" onclick="resetFilters()">Reset</button>
+    </div>
+
+    {% if complaints %}
+
+    <!-- Bulk Action -->
+    <div class="card mb12" style="border:1px solid var(--border); box-shadow:none;">
+      <div class="ch" style="font-size:12px;">Bulk Action</div>
+      <div class="cb">
+        <div class="flex gap8 ac fw">
+          <div class="fg" style="margin:0; min-width:180px;">
+            <label class="fc-hint" style="margin-bottom:4px;">STATUS</label>
+            <select id="bulk-status" class="fc">
+              <option value="">Select Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Under Review">Under Review</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </div>
+          <div class="fg" style="margin:0; min-width:200px;">
+            <label class="fc-hint" style="margin-bottom:4px;">ASSIGN TO</label>
+            <select id="bulk-assign" class="fc">
+              <option value="">Assign Staff</option>
+              <option value="super">Super Admin - {{ session.get('admin_name','Admin') }}</option>
+            </select>
+          </div>
+          <div style="margin-top:18px;">
+            <button class="btn btn-primary btn-sm" onclick="applyBulk()">Apply Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table class="tbl" id="cmp-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" id="chk-all" onchange="toggleAll(this)"></th>
+            <th>ID</th>
+            <th>Consumer No</th>
+            <th>Subject</th>
+            <th>Status</th>
+            <th>Date</th>
+            <th>Age</th>
+            <th>Assigned To</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in complaints %}
+          {% set age = ((now - c.created_at).days) if c.created_at and now else 0 %}
+          <tr data-status="{{ c.status }}" data-type="{{ c.complaint_type }}"
+              data-search="{{ (c.user.name if c.user else '') }} {{ c.complaint_type }} CMP{{ '%04d' % c.id }} {{ (c.user.consumer_id if c.user else '') }}">
+            <td><input type="checkbox" class="row-chk" value="{{ c.id }}"></td>
+            <td><strong>{{ c.id }}</strong></td>
+            <td class="muted">{{ c.user.consumer_id if c.user else '—' }}</td>
+            <td>
+              <div>{{ c.complaint_type }}</div>
+              <div class="muted" style="font-size:11px;">{{ c.subcategory or '' }}</div>
+            </td>
+            <td>
+              {% if c.status == 'Resolved' %}<span class="badge badge-resolved">Resolved</span>
+              {% elif c.status == 'Under Review' %}<span class="badge badge-review">In Progress</span>
+              {% else %}<span class="badge badge-pending">Pending</span>{% endif %}
+            </td>
+            <td class="muted">{{ c.created_at.strftime('%d-%m-%Y') if c.created_at else '—' }}</td>
+            <td class="muted">{{ age }}d</td>
+            <td class="muted">—</td>
+            <td>
+              <a href="{{ url_for('admin.complaint_detail_admin', complaint_id=c.id) }}"
+                 class="btn btn-primary btn-xs">View</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <div class="tc muted" style="padding:30px 0;">No complaints found in the system.</div>
+    {% endif %}
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function filterTable() {
+  var q  = document.getElementById('srch').value.toLowerCase();
+  var st = document.getElementById('f-status').value;
+  var ty = document.getElementById('f-type').value;
+  document.querySelectorAll('#cmp-table tbody tr').forEach(function(r) {
+    var ok = (!q  || r.dataset.search.toLowerCase().includes(q))
+          && (!st || r.dataset.status === st)
+          && (!ty || r.dataset.type   === ty);
+    r.style.display = ok ? '' : 'none';
+  });
+}
+function resetFilters() {
+  document.getElementById('srch').value = '';
+  document.getElementById('f-status').value = '';
+  document.getElementById('f-priority').value = '';
+  document.getElementById('f-type').value = '';
+  document.getElementById('f-district').value = '';
+  document.querySelectorAll('#cmp-table tbody tr').forEach(function(r) { r.style.display = ''; });
+}
+function toggleAll(cb) {
+  document.querySelectorAll('.row-chk').forEach(function(c) { c.checked = cb.checked; });
+}
+function applyBulk() {
+  var status = document.getElementById('bulk-status').value;
+  if (!status) { alert('Please select a status.'); return; }
+  var checked = Array.from(document.querySelectorAll('.row-chk:checked')).map(function(c) { return c.value; });
+  if (!checked.length) { alert('Please select at least one complaint.'); return; }
+  alert('Bulk action applied to ' + checked.length + ' complaint(s).');
+}
+document.getElementById('srch').addEventListener('input', filterTable);
+document.getElementById('f-status').addEventListener('change', filterTable);
+document.getElementById('f-type').addEventListener('change', filterTable);
+</script>
+{% endblock %}

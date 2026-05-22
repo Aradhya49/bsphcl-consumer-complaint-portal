@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin Panel – BSPHCL{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Government Top Strip -->
+<div class="gov-strip">
+  <span>Government of Bihar &nbsp;|&nbsp; BSPHCL Admin Control Panel</span>
+  <span>Helpline: <strong>1912</strong> &nbsp;|&nbsp;
+    <a href="https://www.bsphcl.co.in" target="_blank">www.bsphcl.co.in</a>
+  </span>
+</div>
+
+<!-- Header -->
+<div class="gov-header">
+  <div class="gov-logo" style="background:#c8102e; color:#fff; border-color:#fff;">&#9888;</div>
+  <div class="gov-org">
+    <h1>Bihar State Power Holding Company Limited</h1>
+    <div class="sub">Administrator Control Panel — Complaint Management System</div>
+    <div class="tag">Restricted Access — Authorised Personnel Only</div>
+  </div>
+</div>
+
+<!-- Admin Navbar -->
+<div class="gov-nav">
+  <a href="{{ url_for('admin.admin_dashboard') }}"
+     class="{% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}">Dashboard</a>
+  <a href="{{ url_for('admin.all_complaints') }}"
+     class="{% if request.endpoint == 'admin.all_complaints' %}active{% endif %}">All Complaints</a>
+  <a href="{{ url_for('admin.manage_users') }}"
+     class="{% if request.endpoint == 'admin.manage_users' %}active{% endif %}">Manage Users</a>
+  <a href="{{ url_for('admin.admin_profile') }}"
+     class="{% if request.endpoint == 'admin.admin_profile' %}active{% endif %}">Profile</a>
+
+  {% if session.get('admin_id') %}
+  <!-- Notification Bell -->
+  <a href="{{ url_for('admin.admin_notifications') }}"
+     class="{% if request.endpoint == 'admin.admin_notifications' %}active{% endif %}"
+     style="position:relative;" title="Notifications">
+    &#128276; Notifications
+    {% if g.admin_unread and g.admin_unread > 0 %}
+    <span class="notif-badge" id="admin-notif-badge">{{ g.admin_unread }}</span>
+    {% else %}
+    <span class="notif-badge" id="admin-notif-badge" style="display:none;">0</span>
+    {% endif %}
+  </a>
+
+  <a href="{{ url_for('admin.admin_logout') }}"
+     style="margin-left:auto; background:#8b0000; color:#fff; border-right:none;">
+    Logout ({{ session.get('admin_name','Admin') }})
+  </a>
+  {% endif %}
+</div>
+
+<!-- Layout -->
+<div class="layout">
+
+  <!-- Admin Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-heading">Admin Panel</div>
+    <a href="{{ url_for('admin.admin_dashboard') }}"
+       class="{% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}">
+      <span class="sb-icon">&#9632;</span> Dashboard
+    </a>
+    <a href="{{ url_for('admin.all_complaints') }}"
+       class="{% if request.endpoint == 'admin.all_complaints' %}active{% endif %}">
+      <span class="sb-icon">&#128196;</span> All Complaints
+    </a>
+    <a href="{{ url_for('admin.manage_users') }}"
+       class="{% if request.endpoint == 'admin.manage_users' %}active{% endif %}">
+      <span class="sb-icon">&#128101;</span> Manage Users
+    </a>
+    <a href="{{ url_for('admin.admin_notifications') }}"
+       class="{% if request.endpoint == 'admin.admin_notifications' %}active{% endif %}"
+       style="position:relative;">
+      <span class="sb-icon">&#128276;</span> Notifications
+      {% if g.admin_unread and g.admin_unread > 0 %}
+      <span class="notif-badge-sb">{{ g.admin_unread }}</span>
+      {% endif %}
+    </a>
+    <a href="{{ url_for('admin.admin_profile') }}"
+       class="{% if request.endpoint == 'admin.admin_profile' %}active{% endif %}">
+      <span class="sb-icon">&#9711;</span> My Profile
+    </a>
+
+    <div class="sb-heading" style="margin-top:10px;">User Portal</div>
+    <a href="{{ url_for('main_bp.login') }}" target="_blank">
+      <span class="sb-icon">&#8599;</span> User Portal
+    </a>
+
+    <div class="sb-heading" style="margin-top:10px;">Account</div>
+    <a href="{{ url_for('admin.admin_logout') }}">
+      <span class="sb-icon">&#x2192;</span> Logout
+    </a>
+  </aside>
+
+  <!-- Content -->
+  <div class="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span>{{ message }}</span>
+            <button class="xbtn" type="button">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="gov-footer">
+  &copy; 2025 Bihar State Power Holding Company Limited &nbsp;|&nbsp;
+  Admin Panel &nbsp;|&nbsp; Authorised Access Only
+</div>
+
+<style>
+.notif-badge {
+  position:absolute; top:4px; right:4px;
+  background:#ffd700; color:#8b0000;
+  font-size:10px; font-weight:bold;
+  min-width:18px; height:18px; border-radius:50%;
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:0 4px; line-height:1;
+}
+.notif-badge-sb {
+  background:#ffd700; color:#8b0000;
+  font-size:10px; font-weight:bold;
+  min-width:18px; height:18px; border-radius:50%;
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:0 4px; margin-left:auto;
+}
+</style>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+{% if session.get('admin_id') %}
+<script>
+function refreshAdminBadge() {
+  fetch('/admin/api/unread-count')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var badge = document.getElementById('admin-notif-badge');
+      if (badge) {
+        if (data.count > 0) {
+          badge.textContent = data.count;
+          badge.style.display = 'inline-flex';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    }).catch(function() {});
+}
+setInterval(refreshAdminBadge, 30000);
+</script>
+{% endif %}
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

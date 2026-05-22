@@ -1,0 +1,124 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Staff Management – Admin – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>Staff Management</h2>
+  <span class="bc">Admin &rsaquo; Staff</span>
+</div>
+
+<!-- Add Staff -->
+<div class="card mb12">
+  <div class="ch flex jb ac">
+    <span>Add Staff Member</span>
+    <span class="muted" style="font-size:12px;">Use official staff email and assigned role.</span>
+  </div>
+  <div class="cb">
+    <form method="POST" action="{{ url_for('admin.admin_register') }}">
+      <input type="hidden" name="secret_code" value="BSPHCL-ADMIN-SECRET">
+      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px; align-items:end;">
+        <div class="fg" style="margin:0;">
+          <label class="fc-hint" style="margin-bottom:4px; font-weight:700;">FULL NAME</label>
+          <input type="text" name="name" class="fc" placeholder="Full name" required>
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="fc-hint" style="margin-bottom:4px; font-weight:700;">EMAIL</label>
+          <input type="email" name="email" class="fc" placeholder="Official email" required>
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="fc-hint" style="margin-bottom:4px; font-weight:700;">MOBILE</label>
+          <input type="tel" name="mobile" class="fc" placeholder="10-digit mobile" maxlength="10" required>
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="fc-hint" style="margin-bottom:4px; font-weight:700;">ROLE</label>
+          <select name="role" class="fc">
+            <option value="">Select Role</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="fc-hint" style="margin-bottom:4px; font-weight:700;">PASSWORD</label>
+          <input type="password" name="password" class="fc" placeholder="Min 6 characters" required>
+        </div>
+      </div>
+      <div class="mt12">
+        <button type="submit" class="btn btn-primary btn-sm">Add Staff</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Staff List -->
+<div class="card">
+  <div class="ch flex jb ac">
+    <span>Staff Members</span>
+    <span class="muted" style="font-size:12px;">Total Records: 1</span>
+  </div>
+  <div class="cb">
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Staff Name</th>
+            <th>Email Address</th>
+            <th>Mobile</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Registered On</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Current admin shown as staff record -->
+          <tr>
+            <td>1</td>
+            <td>
+              <div class="flex ac gap8">
+                <div style="
+                  width:30px; height:30px; border-radius:50%; flex-shrink:0;
+                  background:#1a3a6b; color:#fff; font-weight:700; font-size:13px;
+                  display:flex; align-items:center; justify-content:center;">
+                  {{ session.get('admin_name','A')[0].upper() }}
+                </div>
+                <div>
+                  <div style="font-weight:600;">{{ session.get('admin_name','Super Admin') }}</div>
+                  <div class="muted" style="font-size:11px;">admin@bsphcl.gov.in</div>
+                </div>
+              </div>
+            </td>
+            <td class="muted">admin@bsphcl.gov.in</td>
+            <td class="muted">9000000001</td>
+            <td><span class="badge badge-review">Super Admin</span></td>
+            <td><span class="badge badge-resolved">&#9679; Active</span></td>
+            <td class="muted">—</td>
+            <td>
+              <div class="flex gap8 ac">
+                <button class="btn btn-danger btn-xs"
+                        onclick="alert('Cannot deactivate yourself.')">Deactivate</button>
+                <input type="text" class="fc" placeholder="New Password"
+                       style="width:110px; padding:4px 8px; font-size:11px;">
+                <button class="btn btn-outline btn-xs"
+                        onclick="alert('Reset password feature coming soon.')">Reset Password</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="muted mt8" style="font-size:12px;">Showing 1 staff record(s)</div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Make grid responsive on small screens
+var grid = document.querySelector('[style*="grid-template-columns:repeat(5"]');
+if (grid && window.innerWidth < 900) {
+  grid.style.gridTemplateColumns = '1fr 1fr';
+}
+</script>
+{% endblock %}

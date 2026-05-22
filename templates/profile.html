@@ -1,0 +1,394 @@
+{% extends 'base.html' %}
+{% block title %}My Profile – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>My Profile</h2>
+  <span class="bc">
+    <a href="{{ url_for('main_bp.dashboard') }}">Dashboard</a> &rsaquo; My Profile
+  </span>
+</div>
+
+<!-- Top Profile Card -->
+<div class="card mb16">
+  <div class="cb">
+    <div class="flex ac gap12 fw">
+
+      <!-- Profile Picture -->
+      <div style="position:relative; flex-shrink:0;">
+        {% if user.profile_pic %}
+          <img src="{{ url_for('static', filename='uploads/profiles/' ~ user.profile_pic) }}"
+               alt="Profile Picture"
+               style="width:90px; height:90px; border-radius:50%; object-fit:cover;
+                      border:3px solid var(--primary); display:block;">
+        {% else %}
+          <div style="width:90px; height:90px; border-radius:50%;
+                      background:var(--primary); border:3px solid var(--primary);
+                      display:flex; align-items:center; justify-content:center;
+                      color:#fff; font-size:34px; font-weight:bold;">
+            {{ user.name[0].upper() if user.name else 'U' }}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Basic Info -->
+      <div style="flex:1;">
+        <div style="font-size:18px; font-weight:bold; color:var(--primary);">
+          {{ user.name }}
+        </div>
+        <div class="muted mt8">{{ user.email }}</div>
+        <div class="muted">{{ user.mobile }}</div>
+        <div class="mt8 flex gap8 fw">
+          <span class="badge {% if user.role == 'admin' %}badge-admin{% elif user.role == 'staff' %}badge-staff{% else %}badge-resolved{% endif %}">
+            {{ user.role | upper }}
+          </span>
+          <span class="badge" style="background:#e8edf5; color:var(--primary); border:1px solid var(--border);">
+            {{ user.consumer_id }}
+          </span>
+          {% if user.district %}
+          <span class="badge" style="background:#fff3cd; color:#856404; border:1px solid #ffc107;">
+            {{ user.district }}
+          </span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Quick links -->
+      <div class="flex gap8 fw" style="flex-shrink:0;">
+        <a href="{{ url_for('main_bp.complaint') }}" class="btn btn-primary btn-sm">+ File Complaint</a>
+        <a href="{{ url_for('main_bp.complaint_history') }}" class="btn btn-outline btn-sm">My Complaints</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Three Column Layout -->
+<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+
+  <!-- Column 1: Account Details -->
+  <div class="card">
+    <div class="ch">Account Details</div>
+    <div class="cb" style="padding:0;">
+      <table class="tbl">
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary); width:110px;">Consumer ID</td>
+          <td>{{ user.consumer_id }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Full Name</td>
+          <td>{{ user.name }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Email</td>
+          <td style="word-break:break-all;">{{ user.email }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Mobile</td>
+          <td>{{ user.mobile }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">District</td>
+          <td>{{ user.district or '—' }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Address</td>
+          <td>{{ user.address or '—' }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Role</td>
+          <td>{{ user.role | title }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Joined</td>
+          <td>{{ user.created_at.strftime('%d %b %Y') if user.created_at else '—' }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Column 2: Edit Profile + Profile Picture -->
+  <div>
+
+    <!-- Profile Picture Section -->
+    <div class="card mb16">
+      <div class="ch">Profile Picture</div>
+      <div class="cb tc">
+
+        <!-- Preview -->
+        <div style="margin-bottom:14px;">
+          {% if user.profile_pic %}
+            <img id="pic-preview"
+                 src="{{ url_for('static', filename='uploads/profiles/' ~ user.profile_pic) }}"
+                 alt="Profile"
+                 style="width:80px; height:80px; border-radius:50%; object-fit:cover;
+                        border:3px solid var(--primary); display:block; margin:0 auto 8px;">
+          {% else %}
+            <div id="pic-preview-placeholder"
+                 style="width:80px; height:80px; border-radius:50%;
+                        background:var(--primary); border:3px solid var(--primary);
+                        display:flex; align-items:center; justify-content:center;
+                        color:#fff; font-size:28px; font-weight:bold; margin:0 auto 8px;">
+              {{ user.name[0].upper() if user.name else 'U' }}
+            </div>
+            <img id="pic-preview" src="" alt=""
+                 style="width:80px; height:80px; border-radius:50%; object-fit:cover;
+                        border:3px solid var(--primary); display:none; margin:0 auto 8px;">
+          {% endif %}
+        </div>
+
+        <!-- Upload Form -->
+        <form method="POST" action="{{ url_for('main_bp.upload_profile_pic') }}"
+              enctype="multipart/form-data">
+          <div class="fg">
+            <label for="profile_pic" style="font-size:12px; color:var(--text-muted); font-weight:normal;">
+              JPG, PNG only &nbsp;|&nbsp; Max 2 MB
+            </label>
+            <input type="file" id="profile_pic" name="profile_pic"
+                   accept=".jpg,.jpeg,.png"
+                   class="fc" style="padding:5px; font-size:12px;"
+                   onchange="previewPic(this)">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm w100">Upload Picture</button>
+        </form>
+
+        <!-- Remove Button -->
+        {% if user.profile_pic %}
+        <form method="POST" action="{{ url_for('main_bp.remove_profile_pic') }}"
+              onsubmit="return confirm('Remove your profile picture?')"
+              style="margin-top:8px;">
+          <button type="submit" class="btn btn-danger btn-sm w100">Remove Picture</button>
+        </form>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Edit Profile -->
+    <div class="card">
+      <div class="ch">Edit Profile</div>
+      <div class="cb">
+        <form method="POST" action="{{ url_for('main_bp.edit_profile') }}">
+
+          <div class="fg">
+            <label for="name">Full Name <span class="req">*</span></label>
+            <input type="text" id="name" name="name" class="fc"
+                   value="{{ user.name }}" required>
+          </div>
+
+          <div class="fg">
+            <label for="email">Email <span class="req">*</span></label>
+            <input type="email" id="email" name="email" class="fc"
+                   value="{{ user.email }}" required>
+          </div>
+
+          <div class="fg">
+            <label for="mobile">Mobile <span class="req">*</span></label>
+            <input type="tel" id="mobile" name="mobile" class="fc"
+                   value="{{ user.mobile }}" maxlength="10" required>
+          </div>
+
+          <!-- District searchable -->
+          <div class="fg">
+            <label for="district-search">District <span class="req">*</span></label>
+            <div style="position:relative;">
+              <input type="text" id="district-search" class="fc"
+                     value="{{ user.district or '' }}"
+                     placeholder="Type to search..." autocomplete="off">
+              <input type="hidden" id="district" name="district"
+                     value="{{ user.district or '' }}" required>
+              <div id="district-dropdown" style="
+                display:none; position:absolute; top:100%; left:0; right:0;
+                background:#fff; border:1px solid var(--input-border); border-top:none;
+                max-height:160px; overflow-y:auto; z-index:999;
+                box-shadow:0 4px 8px rgba(0,0,0,0.1);"></div>
+            </div>
+          </div>
+
+          <div class="fg">
+            <label for="address">Address
+              <span class="muted" style="font-weight:normal;">(Optional)</span>
+            </label>
+            <textarea id="address" name="address" class="fc" rows="2"
+                      placeholder="House No., Street, Area">{{ user.address or '' }}</textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-sm w100">Update Profile</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Column 3: Change Password -->
+  <div class="card">
+    <div class="ch">Change Password</div>
+    <div class="cb">
+
+      <div class="info-note mb12">
+        &#9432;&nbsp; Enter your current password then set a new one.
+        Both new password fields must match.
+      </div>
+
+      <form method="POST" action="{{ url_for('main_bp.change_password') }}"
+            onsubmit="return validatePasswords()">
+
+        <div class="fg">
+          <label for="old_password">Current Password <span class="req">*</span></label>
+          <div class="pw-wrap">
+            <input type="password" id="old_password" name="old_password"
+                   class="fc" placeholder="Enter current password" required>
+            <button type="button" class="pw-toggle"
+                    onclick="togglePw('old_password', this)">&#128065;</button>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label for="new_password">New Password <span class="req">*</span></label>
+          <div class="pw-wrap">
+            <input type="password" id="new_password" name="new_password"
+                   class="fc" placeholder="Min 6 characters"
+                   required oninput="checkMatch()">
+            <button type="button" class="pw-toggle"
+                    onclick="togglePw('new_password', this)">&#128065;</button>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label for="confirm_new_password">Confirm New Password <span class="req">*</span></label>
+          <div class="pw-wrap">
+            <input type="password" id="confirm_new_password" name="confirm_new_password"
+                   class="fc" placeholder="Re-enter new password"
+                   required oninput="checkMatch()">
+            <button type="button" class="pw-toggle"
+                    onclick="togglePw('confirm_new_password', this)">&#128065;</button>
+          </div>
+          <div id="match-msg" class="fc-hint mt8" style="display:none;"></div>
+        </div>
+
+        <button type="submit" class="btn btn-danger btn-sm w100">Change Password</button>
+
+      </form>
+    </div>
+  </div>
+
+</div><!-- end 3-col grid -->
+
+<style>
+.pw-wrap { position:relative; display:flex; align-items:center; }
+.pw-wrap .fc { padding-right:38px; }
+.pw-toggle {
+  position:absolute; right:8px; background:none; border:none;
+  cursor:pointer; font-size:16px; color:var(--text-muted); padding:0; line-height:1;
+}
+.pw-toggle:hover { color:var(--primary); }
+#district-dropdown div {
+  padding:9px 12px; cursor:pointer; font-size:13px;
+  border-bottom:1px solid #f0f2f5;
+}
+#district-dropdown div:hover { background:#e8f0fb; color:var(--primary); }
+
+@media(max-width:900px) {
+  div[style*="grid-template-columns:1fr 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+</style>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Profile pic preview ─────────────────────────────────────
+function previewPic(input) {
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var preview = document.getElementById('pic-preview');
+      var placeholder = document.getElementById('pic-preview-placeholder');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      if (placeholder) placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+// ── Password show/hide ──────────────────────────────────────
+function togglePw(id, btn) {
+  var inp = document.getElementById(id);
+  if (inp.type === 'password') {
+    inp.type = 'text'; btn.style.color = 'var(--primary)';
+  } else {
+    inp.type = 'password'; btn.style.color = 'var(--text-muted)';
+  }
+}
+
+// ── Password match check ────────────────────────────────────
+function checkMatch() {
+  var np  = document.getElementById('new_password').value;
+  var cnp = document.getElementById('confirm_new_password').value;
+  var msg = document.getElementById('match-msg');
+  if (!cnp) { msg.style.display = 'none'; return; }
+  msg.style.display = 'block';
+  if (np === cnp) {
+    msg.textContent = '✓ Passwords match';
+    msg.style.color = 'var(--success)';
+    msg.style.fontWeight = 'bold';
+  } else {
+    msg.textContent = '✗ Passwords do not match';
+    msg.style.color = 'var(--accent)';
+    msg.style.fontWeight = 'bold';
+  }
+}
+
+function validatePasswords() {
+  var np  = document.getElementById('new_password').value;
+  var cnp = document.getElementById('confirm_new_password').value;
+  if (np.length < 6) { alert('New password must be at least 6 characters.'); return false; }
+  if (np !== cnp)    { alert('Passwords do not match.'); return false; }
+  return true;
+}
+
+// ── District dropdown ───────────────────────────────────────
+var biharDistricts = [
+  "Araria","Arwal","Aurangabad","Banka","Begusarai","Bhagalpur",
+  "Bhojpur","Buxar","Darbhanga","East Champaran","Gaya","Gopalganj",
+  "Jamui","Jehanabad","Kaimur","Katihar","Khagaria","Kishanganj",
+  "Lakhisarai","Madhepura","Madhubani","Munger","Muzaffarpur","Nalanda",
+  "Nawada","Patna","Purnia","Rohtas","Saharsa","Samastipur","Saran",
+  "Sheikhpura","Sheohar","Sitamarhi","Siwan","Supaul","Vaishali",
+  "West Champaran"
+];
+
+var si = document.getElementById('district-search');
+var hi = document.getElementById('district');
+var dd = document.getElementById('district-dropdown');
+
+if (si) {
+  si.addEventListener('input', function() {
+    var q = this.value.trim().toLowerCase();
+    dd.innerHTML = ''; hi.value = '';
+    if (!q) { dd.style.display = 'none'; return; }
+    var matches = biharDistricts.filter(function(d) {
+      return d.toLowerCase().startsWith(q) || d.toLowerCase().includes(q);
+    });
+    if (!matches.length) {
+      dd.innerHTML = '<div style="color:var(--text-muted);cursor:default;padding:9px 12px;">No district found</div>';
+    } else {
+      matches.forEach(function(d) {
+        var item = document.createElement('div');
+        item.textContent = d;
+        item.onclick = function() { si.value = d; hi.value = d; dd.style.display = 'none'; };
+        dd.appendChild(item);
+      });
+    }
+    dd.style.display = 'block';
+  });
+  document.addEventListener('click', function(e) {
+    if (!si.contains(e.target) && !dd.contains(e.target)) dd.style.display = 'none';
+  });
+}
+</script>
+{% endblock %}

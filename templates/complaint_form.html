@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}File a Complaint – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>File a Complaint</h2>
+  <span class="bc"><a href="{{ url_for('main_bp.dashboard') }}">Dashboard</a> &rsaquo; File Complaint</span>
+</div>
+
+<div class="info-note">
+  &#9432;&nbsp; Please provide accurate details about your complaint. A unique Complaint ID will be generated upon submission.
+  You can attach supporting documents (photos, bills) as evidence.
+</div>
+
+<div class="card">
+  <div class="ch">Complaint Submission Form</div>
+  <div class="cb">
+
+    <form method="POST" action="{{ url_for('main_bp.complaint') }}" enctype="multipart/form-data">
+
+      <div class="g2">
+        <div class="fg">
+          <label for="complaint_type">Complaint Type <span class="req">*</span></label>
+          <select id="complaint_type" name="complaint_type" class="fc" required>
+            <option value="">-- Select Complaint Type --</option>
+            <option value="Billing Issue">Billing Issue</option>
+            <option value="Power Outage">Power Outage</option>
+            <option value="Meter Problem">Meter Problem</option>
+            <option value="Connection Request">Connection Request</option>
+            <option value="Others">Others</option>
+          </select>
+        </div>
+
+        <div class="fg" id="sub-wrap" style="display:none;">
+          <label for="subcategory">Subcategory <span class="req">*</span></label>
+          <select id="subcategory" name="subcategory" class="fc">
+            <option value="">-- Select Subcategory --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label for="description">Complaint Description <span class="req">*</span></label>
+        <textarea id="description" name="description" class="fc" rows="5"
+                  placeholder="Describe your complaint in detail. Include meter number, account number, date of issue, etc."
+                  required></textarea>
+        <div class="fc-hint">Minimum 20 characters. Be specific for faster resolution.</div>
+      </div>
+
+      <div class="fg">
+        <label for="attachment">Supporting Document / Image (Optional)</label>
+        <input type="file" id="attachment" name="attachment" class="fc"
+               accept=".jpg,.jpeg,.png,.pdf"
+               style="padding:5px 10px; background:#fff;">
+        <div class="fc-hint">Allowed formats: JPG, JPEG, PNG, PDF &nbsp;|&nbsp; Max size: 5 MB</div>
+        <div id="file-label" class="fc-hint mt8" style="color:#1a3a6b;"></div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="flex gap8 fw">
+        <button type="submit" class="btn btn-primary">Submit Complaint</button>
+        <a href="{{ url_for('main_bp.dashboard') }}" class="btn btn-outline">Cancel</a>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<!-- Instructions -->
+<div class="card">
+  <div class="ch">Instructions for Filing Complaints</div>
+  <div class="cb">
+    <table class="tbl">
+      <thead><tr><th>#</th><th>Complaint Type</th><th>Examples</th><th>Expected Resolution Time</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Billing Issue</td><td>Wrong bill amount, meter reading error, duplicate bill</td><td>5–7 working days</td></tr>
+        <tr><td>2</td><td>Power Outage</td><td>Transformer failure, area blackout, voltage fluctuation</td><td>24–48 hours</td></tr>
+        <tr><td>3</td><td>Meter Problem</td><td>Meter not working, tampered meter, meter burning</td><td>3–5 working days</td></tr>
+        <tr><td>4</td><td>Connection Request</td><td>New connection, reconnection, load change</td><td>7–15 working days</td></tr>
+        <tr><td>5</td><td>Others</td><td>General queries, staff behaviour, pole/wire issues</td><td>5–10 working days</td></tr>
+      </tbody>
+    </table>
+    <div class="info-note mt12">
+      For urgent power-related emergencies, please call <strong>1912</strong> immediately.
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Complaint CMP{{ '%04d' % complaint.id }} – Admin – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>Complaint Detail &mdash; CMP{{ '%04d' % complaint.id }}</h2>
+  <span class="bc">
+    <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a> &rsaquo;
+    <a href="{{ url_for('admin.all_complaints') }}">All Complaints</a> &rsaquo;
+    CMP{{ '%04d' % complaint.id }}
+  </span>
+</div>
+
+<div class="g2">
+
+  <!-- Left: Complaint Info -->
+  <div>
+
+    <div class="card">
+      <div class="ch">Complaint Information</div>
+      <div class="cb">
+        <table class="tbl">
+          <tr><td class="bold" style="width:150px; background:#eef1f7; color:var(--primary);">Complaint ID</td><td><strong>CMP{{ '%04d' % complaint.id }}</strong></td></tr>
+          <tr><td class="bold" style="background:#eef1f7; color:var(--primary);">Type</td><td>{{ complaint.complaint_type }}</td></tr>
+          <tr><td class="bold" style="background:#eef1f7; color:var(--primary);">Subcategory</td><td>{{ complaint.subcategory or '—' }}</td></tr>
+          <tr><td class="bold" style="background:#eef1f7; color:var(--primary);">Date Filed</td><td>{{ complaint.created_at.strftime('%d %B %Y, %I:%M %p') if complaint.created_at else '—' }}</td></tr>
+          <tr><td class="bold" style="background:#eef1f7; color:var(--primary);">Current Status</td>
+            <td>
+              {% if complaint.status == 'Resolved' %}<span class="badge badge-resolved">Resolved</span>
+              {% elif complaint.status == 'Under Review' %}<span class="badge badge-review">Under Review</span>
+              {% else %}<span class="badge badge-pending">Pending</span>{% endif %}
+            </td>
+          </tr>
+          <tr><td class="bold" style="background:#eef1f7; color:var(--primary);">Attachment</td>
+            <td>
+              {% if complaint.attachment %}
+                <a href="{{ url_for('static', filename='uploads/' ~ complaint.attachment) }}" target="_blank">
+                  &#128206; View Attachment
+                </a>
+              {% else %}No attachment{% endif %}
+            </td>
+          </tr>
+          <tr><td class="bold" style="background:#eef1f7; color:var(--primary);">Description</td>
+            <td style="line-height:1.7; white-space:pre-wrap;">{{ complaint.description }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Consumer Info -->
+    {% if complaint.user %}
+    <div class="card">
+      <div class="ch">Consumer Details</div>
+      <div class="cb">
+        <table class="tbl">
+          <tr><td class="bold" style="width:150px; background:#eef1f7; color:var(--primary);">Consumer ID</td><td>{{ complaint.user.consumer_id }}</td></tr>
+          <tr><td class="bold" style="background:#eef1f7; color:var(--primary);">Name</td><td>{{ complaint.user.name }}</td></tr>
+          <tr><td class="bold" style="background:#eef1f7; color:var(--primary);">Email</td><td>{{ complaint.user.email }}</td></tr>
+          <tr><td class="bold" style="background:#eef1f7; color:var(--primary);">Mobile</td><td>{{ complaint.user.mobile }}</td></tr>
+          <tr><td class="bold" style="background:#eef1f7; color:var(--primary);">Role</td>
+            <td><span class="badge {% if complaint.user.role == 'admin' %}badge-admin{% elif complaint.user.role == 'staff' %}badge-staff{% else %}badge-resolved{% endif %}">{{ complaint.user.role }}</span></td>
+          </tr>
+        </table>
+        <div class="mt8">
+          <a href="{{ url_for('admin.user_complaints', user_id=complaint.user.id) }}" class="btn btn-outline btn-xs">View All Complaints by This User</a>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Right: Actions + Reply -->
+  <div>
+
+    <!-- Update Status -->
+    <div class="card">
+      <div class="ch" style="color:#8b0000;">Update Complaint Status</div>
+      <div class="cb">
+        <form method="POST" action="{{ url_for('admin.update_status', complaint_id=complaint.id) }}">
+          <div class="fg">
+            <label for="status">Set Status <span class="req">*</span></label>
+            <select id="status" name="status" class="fc" required>
+              <option value="Pending"      {% if complaint.status == 'Pending' %}selected{% endif %}>Pending</option>
+              <option value="Under Review" {% if complaint.status == 'Under Review' %}selected{% endif %}>Under Review</option>
+              <option value="Resolved"     {% if complaint.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">Update Status</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin Reply -->
+    <div class="card">
+      <div class="ch" style="color:#8b0000;">Send Reply to Consumer</div>
+      <div class="cb">
+        <form method="POST" action="{{ url_for('admin.admin_reply', complaint_id=complaint.id) }}">
+          <div class="fg">
+            <label for="message">Reply Message <span class="req">*</span></label>
+            <textarea id="message" name="message" class="fc" rows="5"
+                      placeholder="Type your reply to the consumer..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-danger btn-sm">Send Reply</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Back -->
+    <a href="{{ url_for('admin.all_complaints') }}" class="btn btn-outline btn-sm">&larr; Back to All Complaints</a>
+
+  </div>
+
+</div>
+
+<!-- Full Conversation -->
+<div class="card mt16">
+  <div class="ch">Full Conversation Thread</div>
+  <div class="cb">
+    {% if complaint.replies %}
+    <div class="thread">
+      {% for reply in complaint.replies %}
+      <div class="thread-msg {% if reply.role == 'admin' %}by-admin{% else %}by-user{% endif %}">
+        <div class="meta">
+          <span class="who">{% if reply.role == 'admin' %}BSPHCL Admin{% else %}Consumer ({{ complaint.user.name if complaint.user else 'User' }}){% endif %}</span>
+          &nbsp;&nbsp;&mdash;&nbsp;&nbsp;
+          {{ reply.timestamp.strftime('%d %b %Y, %I:%M %p') if reply.timestamp else '' }}
+        </div>
+        <div class="body">{{ reply.message }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="muted">No conversation yet.</div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

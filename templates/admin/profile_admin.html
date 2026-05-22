@@ -1,0 +1,292 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Admin Profile – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>Admin Profile</h2>
+  <span class="bc">
+    <a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a> &rsaquo; My Profile
+  </span>
+</div>
+
+<!-- Top Profile Card -->
+<div class="card mb16">
+  <div class="cb">
+    <div class="flex ac gap12 fw">
+
+      <!-- Profile Picture -->
+      <div style="position:relative; flex-shrink:0;">
+        {% if g.admin.profile_pic %}
+          <img src="{{ url_for('static', filename='uploads/profiles/' ~ g.admin.profile_pic) }}"
+               alt="Profile Picture"
+               style="width:90px; height:90px; border-radius:50%; object-fit:cover;
+                      border:3px solid #8b0000; display:block;">
+        {% else %}
+          <div style="width:90px; height:90px; border-radius:50%;
+                      background:#8b0000; border:3px solid #8b0000;
+                      display:flex; align-items:center; justify-content:center;
+                      color:#fff; font-size:34px; font-weight:bold;">
+            {{ g.admin.name[0].upper() if g.admin.name else 'A' }}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Basic Info -->
+      <div style="flex:1;">
+        <div style="font-size:18px; font-weight:bold; color:var(--primary);">
+          {{ g.admin.name }}
+        </div>
+        <div class="muted mt8">{{ g.admin.email }}</div>
+        <div class="muted">{{ g.admin.mobile }}</div>
+        <div class="mt8 flex gap8">
+          <span class="badge badge-admin">ADMINISTRATOR</span>
+          <span class="badge" style="background:#e8edf5; color:var(--primary); border:1px solid var(--border);">
+            {{ g.admin.consumer_id }}
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Three Column Layout -->
+<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
+
+  <!-- Column 1: Account Details -->
+  <div class="card">
+    <div class="ch">Account Details</div>
+    <div class="cb" style="padding:0;">
+      <table class="tbl">
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary); width:100px;">Admin ID</td>
+          <td>{{ g.admin.consumer_id }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Full Name</td>
+          <td>{{ g.admin.name }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Email</td>
+          <td style="word-break:break-all;">{{ g.admin.email }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Mobile</td>
+          <td>{{ g.admin.mobile }}</td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Role</td>
+          <td><span class="badge badge-admin">Administrator</span></td>
+        </tr>
+        <tr>
+          <td class="bold" style="background:#eef1f7; color:var(--primary);">Joined</td>
+          <td>{{ g.admin.created_at.strftime('%d %b %Y') if g.admin.created_at else '—' }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Column 2: Profile Pic + Edit Profile -->
+  <div>
+
+    <!-- Profile Picture -->
+    <div class="card mb16">
+      <div class="ch">Profile Picture</div>
+      <div class="cb tc">
+
+        <!-- Preview -->
+        <div style="margin-bottom:14px;">
+          {% if g.admin.profile_pic %}
+            <img id="pic-preview"
+                 src="{{ url_for('static', filename='uploads/profiles/' ~ g.admin.profile_pic) }}"
+                 alt="Profile"
+                 style="width:80px; height:80px; border-radius:50%; object-fit:cover;
+                        border:3px solid #8b0000; display:block; margin:0 auto 8px;">
+          {% else %}
+            <div id="pic-preview-placeholder"
+                 style="width:80px; height:80px; border-radius:50%;
+                        background:#8b0000; border:3px solid #8b0000;
+                        display:flex; align-items:center; justify-content:center;
+                        color:#fff; font-size:28px; font-weight:bold; margin:0 auto 8px;">
+              {{ g.admin.name[0].upper() if g.admin.name else 'A' }}
+            </div>
+            <img id="pic-preview" src="" alt=""
+                 style="width:80px; height:80px; border-radius:50%; object-fit:cover;
+                        border:3px solid #8b0000; display:none; margin:0 auto 8px;">
+          {% endif %}
+        </div>
+
+        <!-- Upload -->
+        <form method="POST" action="{{ url_for('admin.admin_upload_pic') }}"
+              enctype="multipart/form-data">
+          <div class="fg">
+            <label for="profile_pic" style="font-size:12px; color:var(--text-muted); font-weight:normal;">
+              JPG, PNG only &nbsp;|&nbsp; Max 2 MB
+            </label>
+            <input type="file" id="profile_pic" name="profile_pic"
+                   accept=".jpg,.jpeg,.png" class="fc"
+                   style="padding:5px; font-size:12px;"
+                   onchange="previewPic(this)">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm w100">Upload Picture</button>
+        </form>
+
+        {% if g.admin.profile_pic %}
+        <form method="POST" action="{{ url_for('admin.admin_remove_pic') }}"
+              onsubmit="return confirm('Remove your profile picture?')"
+              style="margin-top:8px;">
+          <button type="submit" class="btn btn-danger btn-sm w100">Remove Picture</button>
+        </form>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- Edit Profile -->
+    <div class="card">
+      <div class="ch">Edit Profile</div>
+      <div class="cb">
+        <form method="POST" action="{{ url_for('admin.admin_edit_profile') }}">
+          <div class="fg">
+            <label for="name">Full Name <span class="req">*</span></label>
+            <input type="text" id="name" name="name" class="fc"
+                   value="{{ g.admin.name }}" required>
+          </div>
+          <div class="fg">
+            <label for="email">Email <span class="req">*</span></label>
+            <input type="email" id="email" name="email" class="fc"
+                   value="{{ g.admin.email }}" required>
+          </div>
+          <div class="fg">
+            <label for="mobile">Mobile <span class="req">*</span></label>
+            <input type="tel" id="mobile" name="mobile" class="fc"
+                   value="{{ g.admin.mobile }}" maxlength="10" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm w100">Update Profile</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Column 3: Change Password -->
+  <div class="card">
+    <div class="ch">Change Password</div>
+    <div class="cb">
+
+      <div class="info-note mb12">
+        &#9432;&nbsp; Enter current password then set a new one.
+        Both new password fields must match.
+      </div>
+
+      <form method="POST" action="{{ url_for('admin.admin_change_password') }}"
+            onsubmit="return validatePasswords()">
+
+        <div class="fg">
+          <label for="old_password">Current Password <span class="req">*</span></label>
+          <div class="pw-wrap">
+            <input type="password" id="old_password" name="old_password"
+                   class="fc" placeholder="Enter current password" required>
+            <button type="button" class="pw-toggle"
+                    onclick="togglePw('old_password', this)">&#128065;</button>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label for="new_password">New Password <span class="req">*</span></label>
+          <div class="pw-wrap">
+            <input type="password" id="new_password" name="new_password"
+                   class="fc" placeholder="Min 6 characters"
+                   required oninput="checkMatch()">
+            <button type="button" class="pw-toggle"
+                    onclick="togglePw('new_password', this)">&#128065;</button>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label for="confirm_new_password">Confirm New Password <span class="req">*</span></label>
+          <div class="pw-wrap">
+            <input type="password" id="confirm_new_password" name="confirm_new_password"
+                   class="fc" placeholder="Re-enter new password"
+                   required oninput="checkMatch()">
+            <button type="button" class="pw-toggle"
+                    onclick="togglePw('confirm_new_password', this)">&#128065;</button>
+          </div>
+          <div id="match-msg" class="fc-hint mt8" style="display:none;"></div>
+        </div>
+
+        <button type="submit" class="btn btn-danger btn-sm w100">Change Password</button>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<style>
+.pw-wrap { position:relative; display:flex; align-items:center; }
+.pw-wrap .fc { padding-right:38px; }
+.pw-toggle {
+  position:absolute; right:8px; background:none; border:none;
+  cursor:pointer; font-size:16px; color:var(--text-muted); padding:0; line-height:1;
+}
+.pw-toggle:hover { color:var(--primary); }
+@media(max-width:900px) {
+  div[style*="grid-template-columns:1fr 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+</style>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function previewPic(input) {
+  if (input.files && input.files[0]) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var preview = document.getElementById('pic-preview');
+      var placeholder = document.getElementById('pic-preview-placeholder');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      if (placeholder) placeholder.style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function togglePw(id, btn) {
+  var inp = document.getElementById(id);
+  if (inp.type === 'password') {
+    inp.type = 'text'; btn.style.color = 'var(--primary)';
+  } else {
+    inp.type = 'password'; btn.style.color = 'var(--text-muted)';
+  }
+}
+
+function checkMatch() {
+  var np  = document.getElementById('new_password').value;
+  var cnp = document.getElementById('confirm_new_password').value;
+  var msg = document.getElementById('match-msg');
+  if (!cnp) { msg.style.display = 'none'; return; }
+  msg.style.display = 'block';
+  if (np === cnp) {
+    msg.textContent = '✓ Passwords match';
+    msg.style.color = 'var(--success)'; msg.style.fontWeight = 'bold';
+  } else {
+    msg.textContent = '✗ Passwords do not match';
+    msg.style.color = 'var(--accent)'; msg.style.fontWeight = 'bold';
+  }
+}
+
+function validatePasswords() {
+  var np  = document.getElementById('new_password').value;
+  var cnp = document.getElementById('confirm_new_password').value;
+  if (np.length < 6) { alert('New password must be at least 6 characters.'); return false; }
+  if (np !== cnp)    { alert('Passwords do not match.'); return false; }
+  return true;
+}
+</script>
+{% endblock %}

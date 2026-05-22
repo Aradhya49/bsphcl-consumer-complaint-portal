@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% block title %}Register – BSPHCL Consumer Complaint Portal{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-box" style="max-width:520px;">
+
+    <div class="auth-hdr">
+      <h3>&#43; Create Consumer Account</h3>
+      <p>Bihar State Power Holding Company Limited</p>
+    </div>
+
+    <div class="auth-body">
+
+      <div class="info-note">
+        Register with your email address and mobile number to file and track
+        complaints online. Fields marked <span style="color:#c8102e;">*</span>
+        are compulsory.
+      </div>
+
+      <form method="POST" action="{{ url_for('main_bp.register') }}"
+            onsubmit="return validateForm()">
+
+        <div class="fg">
+          <label for="name">Full Name <span class="req">*</span></label>
+          <input type="text" id="name" name="name" class="fc"
+                 placeholder="Enter full name as per records" required autofocus>
+        </div>
+
+        <div class="g2">
+          <div class="fg">
+            <label for="email">Email Address <span class="req">*</span></label>
+            <input type="email" id="email" name="email" class="fc"
+                   placeholder="Valid email address" required>
+          </div>
+          <div class="fg">
+            <label for="mobile">Mobile Number <span class="req">*</span></label>
+            <input type="tel" id="mobile" name="mobile" class="fc"
+                   placeholder="10-digit mobile" maxlength="10" required>
+          </div>
+        </div>
+
+        <!-- District searchable dropdown -->
+        <div class="fg">
+          <label for="district-search">District <span class="req">*</span></label>
+          <div style="position:relative;">
+            <input type="text" id="district-search" class="fc"
+                   placeholder="Type to search Bihar district (e.g. P for Patna)..."
+                   autocomplete="off">
+            <input type="hidden" id="district" name="district">
+            <div id="district-dropdown" style="
+              display:none; position:absolute; top:100%; left:0; right:0;
+              background:#fff; border:1px solid var(--input-border); border-top:none;
+              max-height:200px; overflow-y:auto; z-index:999;
+              box-shadow:0 4px 8px rgba(0,0,0,0.1);"></div>
+          </div>
+          <div id="district-ok"  class="fc-hint mt8"
+               style="display:none; color:var(--success); font-weight:bold;"></div>
+          <div id="district-err" class="fc-hint mt8"
+               style="display:none; color:var(--accent); font-weight:bold;"></div>
+          <div class="fc-hint">
+            Only Bihar districts accepted. Type to search, then click to select.
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="fg">
+          <label for="address">Address
+            <span class="muted" style="font-weight:normal;">(Optional)</span>
+          </label>
+          <textarea id="address" name="address" class="fc" rows="2"
+                    placeholder="House No., Street, Area, Village/Town"></textarea>
+        </div>
+
+        <!-- Passwords -->
+        <div class="g2">
+          <div class="fg">
+            <label for="password">Password <span class="req">*</span></label>
+            <div class="pw-wrap">
+              <input type="password" id="password" name="password" class="fc"
+                     placeholder="Min 6 characters" required oninput="checkPwMatch()">
+              <button type="button" class="pw-toggle"
+                      onclick="togglePw('password',this)">&#128065;</button>
+            </div>
+          </div>
+          <div class="fg">
+            <label for="confirm_password">Confirm Password <span class="req">*</span></label>
+            <div class="pw-wrap">
+              <input type="password" id="confirm_password" name="confirm_password"
+                     class="fc" placeholder="Re-enter password" required
+                     oninput="checkPwMatch()">
+              <button type="button" class="pw-toggle"
+                      onclick="togglePw('confirm_password',this)">&#128065;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password match indicator -->
+        <div id="pw-match-msg" class="fc-hint mb12" style="display:none;"></div>
+
+        <div class="info-note" style="margin-bottom:12px;">
+          &#9432;&nbsp; Your Consumer ID will be auto-generated upon successful registration.
+        </div>
+
+        <button type="submit" class="btn btn-primary w100">Register Account</button>
+
+      </form>
+    </div>
+
+    <div class="auth-foot">
+      Already have an account? <a href="{{ url_for('main_bp.login') }}">Login Here</a>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.pw-wrap { position:relative; display:flex; align-items:center; }
+.pw-wrap .fc { padding-right:38px; }
+.pw-toggle {
+  position:absolute; right:8px; background:none; border:none;
+  cursor:pointer; font-size:16px; color:var(--text-muted); padding:0; line-height:1;
+}
+.pw-toggle:hover { color:var(--primary); }
+#district-dropdown div {
+  padding:9px 12px; cursor:pointer; font-size:13px;
+  border-bottom:1px solid #f0f2f5;
+}
+#district-dropdown div:hover { background:#e8f0fb; color:var(--primary); }
+</style>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Bihar Districts ─────────────────────────────────────────
+var BIHAR_DISTRICTS = [
+  "Araria","Arwal","Aurangabad","Banka","Begusarai","Bhagalpur",
+  "Bhojpur","Buxar","Darbhanga","East Champaran","Gaya","Gopalganj",
+  "Jamui","Jehanabad","Kaimur","Katihar","Khagaria","Kishanganj",
+  "Lakhisarai","Madhepura","Madhubani","Munger","Muzaffarpur","Nalanda",
+  "Nawada","Patna","Purnia","Rohtas","Saharsa","Samastipur","Saran",
+  "Sheikhpura","Sheohar","Sitamarhi","Siwan","Supaul","Vaishali",
+  "West Champaran"
+];
+
+var si = document.getElementById('district-search');
+var hi = document.getElementById('district');
+var dd = document.getElementById('district-dropdown');
+var dok = document.getElementById('district-ok');
+var derr = document.getElementById('district-err');
+
+si.addEventListener('input', function () {
+  var q = this.value.trim().toLowerCase();
+  hi.value = '';
+  dok.style.display  = 'none';
+  derr.style.display = 'none';
+  si.style.borderColor = '';
+  dd.innerHTML = '';
+
+  if (!q) { dd.style.display = 'none'; return; }
+
+  var matches = BIHAR_DISTRICTS.filter(function(d) {
+    return d.toLowerCase().startsWith(q) || d.toLowerCase().includes(q);
+  });
+
+  if (!matches.length) {
+    dd.innerHTML =
+      '<div style="color:var(--accent);cursor:default;padding:9px 12px;font-style:italic;">' +
+      '&#9888; "' + si.value + '" is not a Bihar district. Only Bihar districts are accepted.</div>';
+  } else {
+    matches.forEach(function(d) {
+      var item = document.createElement('div');
+      item.textContent = d;
+      item.onclick = function() {
+        si.value = d;
+        hi.value = d;
+        dd.style.display = 'none';
+        dok.textContent  = '✓ Selected: ' + d;
+        dok.style.display  = 'block';
+        derr.style.display = 'none';
+        si.style.borderColor = 'var(--success)';
+      };
+      dd.appendChild(item);
+    });
+  }
+  dd.style.display = 'block';
+});
+
+document.addEventListener('click', function(e) {
+  if (!si.contains(e.target) && !dd.contains(e.target))
+    dd.style.display = 'none';
+});
+
+// ── Password show/hide ──────────────────────────────────────
+function togglePw(id, btn) {
+  var inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.style.color = inp.type === 'text' ? 'var(--primary)' : 'var(--text-muted)';
+}
+
+// ── Live password match check ───────────────────────────────
+function checkPwMatch() {
+  var pw  = document.getElementById('password').value;
+  var cpw = document.getElementById('confirm_password').value;
+  var msg = document.getElementById('pw-match-msg');
+  if (!cpw) { msg.style.display = 'none'; return; }
+  msg.style.display = 'block';
+  if (pw === cpw) {
+    msg.innerHTML = '<span style="color:var(--success);font-weight:bold;">&#10003; Passwords match</span>';
+    document.getElementById('confirm_password').style.borderColor = 'var(--success)';
+  } else {
+    msg.innerHTML = '<span style="color:var(--accent);font-weight:bold;">&#10007; Passwords do not match</span>';
+    document.getElementById('confirm_password').style.borderColor = 'var(--accent)';
+  }
+}
+
+// ── Full validation before submit ───────────────────────────
+function validateForm() {
+
+  // 1. District must be selected from Bihar list
+  var distVal = hi.value.trim();
+  if (!distVal) {
+    var typed = si.value.trim();
+    var exact = BIHAR_DISTRICTS.find(function(d) {
+      return d.toLowerCase() === typed.toLowerCase();
+    });
+    if (exact) {
+      hi.value = exact;
+    } else {
+      si.style.borderColor = 'var(--accent)';
+      derr.innerHTML = '&#9888; Please select a valid Bihar district from the dropdown. ' +
+                       (typed ? '"' + typed + '" is not a Bihar district.' : 'District is required.');
+      derr.style.display = 'block';
+      dok.style.display  = 'none';
+      si.focus();
+      return false;
+    }
+  }
+
+  // 2. Password length
+  var pw  = document.getElementById('password').value;
+  var cpw = document.getElementById('confirm_password').value;
+  if (pw.length < 6) {
+    alert('Password must be at least 6 characters.');
+    document.getElementById('password').focus();
+    return false;
+  }
+
+  // 3. Password match
+  if (pw !== cpw) {
+    var msg = document.getElementById('pw-match-msg');
+    msg.style.display = 'block';
+    msg.innerHTML = '<span style="color:var(--accent);font-weight:bold;">' +
+                    '&#10007; Passwords do not match. Please re-enter.</span>';
+    document.getElementById('confirm_password').style.borderColor = 'var(--accent)';
+    document.getElementById('confirm_password').focus();
+    return false;
+  }
+
+  // 4. Mobile 10 digits
+  var mob = document.getElementById('mobile').value.trim();
+  if (!/^\d{10}$/.test(mob)) {
+    alert('Please enter a valid 10-digit mobile number.');
+    document.getElementById('mobile').focus();
+    return false;
+  }
+
+  return true;
+}
+</script>
+{% endblock %}

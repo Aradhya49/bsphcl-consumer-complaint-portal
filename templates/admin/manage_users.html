@@ -1,0 +1,388 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}Manage Users – Admin – BSPHCL{% endblock %}
+
+{% block content %}
+
+<div class="ptitle">
+  <h2>Manage Users</h2>
+  <span class="bc">Admin &rsaquo; Manage Users</span>
+</div>
+
+<!-- Summary Stats -->
+<div class="stats" style="grid-template-columns:repeat(3,1fr); margin-bottom:14px;">
+  <div class="stat blue" style="padding:10px;">
+    <span class="sn" style="font-size:20px;">{{ users|length }}</span>
+    <div class="sl">Total Users</div>
+  </div>
+  <div class="stat green" style="padding:10px;">
+    <span class="sn" style="font-size:20px;">{{ users|selectattr('role','eq','user')|list|length }}</span>
+    <div class="sl">Consumers</div>
+  </div>
+  <div class="stat red" style="padding:10px;">
+    <span class="sn" style="font-size:20px;">{{ users|selectattr('role','eq','staff')|list|length }}</span>
+    <div class="sl">Staff Members</div>
+  </div>
+</div>
+
+<!-- ── STAFF MANAGEMENT SECTION ── -->
+<div class="card mb16">
+  <div class="ch" style="background:#1a3a6b; color:#fff;">
+    Staff Management &nbsp;&mdash;&nbsp;
+    <span style="font-size:12px; font-weight:normal; color:#b0c4de;">
+      Admin &rsaquo; Staff
+    </span>
+  </div>
+  <div class="cb">
+
+    <div class="info-note mb16">
+      &#9432;&nbsp; Use official staff email and assigned role only.
+      Staff members can access limited admin functions.
+    </div>
+
+    <!-- Add Staff Form -->
+    <div class="card" style="border-top-color:#1a4d7a; margin-bottom:16px;">
+      <div class="ch" style="background:#e8f0fb; color:#0a3772;">
+        + Add Staff Member
+      </div>
+      <div class="cb">
+        <form method="POST" action="{{ url_for('admin.add_staff') }}"
+              onsubmit="return validateStaffForm()">
+
+          <div class="g2">
+            <div class="fg">
+              <label for="staff-name">Full Name <span class="req">*</span></label>
+              <input type="text" id="staff-name" name="name" class="fc"
+                     placeholder="Enter full name" required>
+            </div>
+            <div class="fg">
+              <label for="staff-email">Email Address <span class="req">*</span></label>
+              <input type="email" id="staff-email" name="email" class="fc"
+                     placeholder="Official email address" required>
+            </div>
+          </div>
+
+          <div class="g2">
+            <div class="fg">
+              <label for="staff-mobile">Mobile Number <span class="req">*</span></label>
+              <input type="tel" id="staff-mobile" name="mobile" class="fc"
+                     placeholder="10-digit mobile" maxlength="10" required>
+            </div>
+            <div class="fg">
+              <label for="staff-role">Role <span class="req">*</span></label>
+              <select id="staff-role" name="role" class="fc" required>
+                <option value="">-- Select Role --</option>
+                <option value="staff">Staff</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="fg">
+            <label for="staff-password">Password <span class="req">*</span></label>
+            <div style="position:relative; display:flex; align-items:center;">
+              <input type="password" id="staff-password" name="password" class="fc"
+                     placeholder="Set a password (min 6 characters)"
+                     required style="padding-right:38px;">
+              <button type="button"
+                      style="position:absolute; right:8px; background:none; border:none;
+                             cursor:pointer; font-size:16px; color:#888; padding:0;"
+                      onclick="var i=document.getElementById('staff-password');
+                               i.type=i.type==='password'?'text':'password';">
+                &#128065;
+              </button>
+            </div>
+          </div>
+
+          <div id="staff-form-err" class="alert alert-danger"
+               style="display:none; margin-bottom:12px;"></div>
+
+          <button type="submit" class="btn btn-primary btn-sm">
+            + Add Staff Member
+          </button>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- Staff Members List -->
+    {% set staff_list = users|selectattr('role','eq','staff')|list %}
+    {% if staff_list %}
+    <div class="card" style="border-top-color:#1a4d7a; margin-bottom:0;">
+      <div class="ch" style="background:#e8f0fb; color:#0a3772;">
+        Current Staff Members ({{ staff_list|length }})
+      </div>
+      <div class="cb" style="padding:0;">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Staff ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Mobile</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in staff_list %}
+            <tr>
+              <td class="muted">{{ loop.index }}</td>
+              <td><strong>{{ u.consumer_id }}</strong></td>
+              <td>
+                {% if u.profile_pic %}
+                <img src="{{ url_for('static', filename='uploads/profiles/' ~ u.profile_pic) }}"
+                     style="width:22px;height:22px;border-radius:50%;object-fit:cover;
+                            vertical-align:middle;margin-right:5px;border:1px solid var(--border);">
+                {% endif %}
+                {{ u.name }}
+              </td>
+              <td class="muted">{{ u.email }}</td>
+              <td class="muted">{{ u.mobile }}</td>
+              <td><span class="badge badge-staff">STAFF</span></td>
+              <td>
+                <div class="flex gap8 ac">
+                  <a href="{{ url_for('admin.user_complaints', user_id=u.id) }}"
+                     class="btn btn-primary btn-xs">View Complaints</a>
+                  <button type="button" class="btn btn-danger btn-xs"
+                          onclick="showDeleteModal(
+                            {{ u.id }},
+                            '{{ u.name | replace("'","&#39;") }}',
+                            '{{ u.consumer_id }}',
+                            '{{ u.email }}'
+                          )">Remove</button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="info-note" style="margin-bottom:0;">
+      No staff members added yet. Use the form above to add staff.
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- ── CONSUMER ACCOUNTS SECTION ── -->
+<div class="card">
+  <div class="ch">Consumer Accounts</div>
+  <div class="cb">
+
+    <!-- Search -->
+    <form method="GET" action="{{ url_for('admin.manage_users') }}"
+          class="search-bar mb12">
+      <input type="text" name="search" value="{{ search or '' }}"
+             placeholder="Search by name, email or Consumer ID..." class="fc">
+      <button type="submit" class="btn btn-primary btn-sm">Search</button>
+      {% if search %}
+      <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline btn-sm">Clear</a>
+      {% endif %}
+    </form>
+
+    <div class="info-note mb12">
+      &#9432;&nbsp; You can <strong>view complaints</strong> and
+      <strong>delete</strong> consumer accounts only.
+      Admin accounts are protected and cannot be modified.
+    </div>
+
+    {% set consumer_list = users|selectattr('role','eq','user')|list %}
+    {% if consumer_list %}
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Consumer ID</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Mobile</th>
+            <th>District</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in consumer_list %}
+          <tr>
+            <td class="muted">{{ loop.index }}</td>
+            <td><strong>{{ u.consumer_id }}</strong></td>
+            <td>
+              {% if u.profile_pic %}
+              <img src="{{ url_for('static', filename='uploads/profiles/' ~ u.profile_pic) }}"
+                   style="width:24px;height:24px;border-radius:50%;object-fit:cover;
+                          vertical-align:middle;margin-right:6px;border:1px solid var(--border);">
+              {% endif %}
+              {{ u.name }}
+            </td>
+            <td class="muted">{{ u.email }}</td>
+            <td class="muted">{{ u.mobile }}</td>
+            <td class="muted">{{ u.district or '—' }}</td>
+            <td>
+              <div class="flex gap8 ac">
+                <a href="{{ url_for('admin.user_complaints', user_id=u.id) }}"
+                   class="btn btn-primary btn-xs">View Complaints</a>
+                <button type="button" class="btn btn-danger btn-xs"
+                        onclick="showDeleteModal(
+                          {{ u.id }},
+                          '{{ u.name | replace("'","&#39;") }}',
+                          '{{ u.consumer_id }}',
+                          '{{ u.email }}'
+                        )">Delete</button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% else %}
+    <div class="tc muted" style="padding:20px 0;">
+      {% if search %}No consumers found matching "{{ search }}".
+      {% else %}No consumers registered yet.{% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- ── Delete Confirmation Modal ── -->
+<div id="delete-overlay" style="display:none;">
+  <div id="delete-modal">
+    <div id="delete-modal-header">
+      <span>Confirm Deletion</span>
+      <button type="button" onclick="closeDeleteModal()"
+              id="modal-close-btn">&times;</button>
+    </div>
+    <div id="delete-modal-body">
+      <div id="delete-warning-icon" style="font-size:40px; color:#c8102e; margin-bottom:12px;">
+        &#x1F5D1;
+      </div>
+      <p style="font-size:14px; color:#333; margin-bottom:16px; line-height:1.6;">
+        You are about to permanently delete this account.
+        This action <strong>cannot be undone</strong>.
+      </p>
+      <div id="delete-user-info">
+        <div class="du-row">
+          <span class="du-label">Name</span>
+          <span class="du-val" id="del-name">—</span>
+        </div>
+        <div class="du-row">
+          <span class="du-label">ID</span>
+          <span class="du-val" id="del-cid">—</span>
+        </div>
+        <div class="du-row">
+          <span class="du-label">Email</span>
+          <span class="du-val" id="del-email">—</span>
+        </div>
+      </div>
+      <div style="background:#fff3cd; border:1px solid #ffc107; border-left:4px solid #b8860b;
+                  padding:10px 13px; font-size:12px; color:#664d03; text-align:left; margin-top:12px;">
+        All complaints, replies and data will also be permanently deleted.
+      </div>
+    </div>
+    <div id="delete-modal-footer">
+      <button type="button" class="btn btn-outline"
+              onclick="closeDeleteModal()">Cancel</button>
+      <form id="delete-form" method="POST" action="" style="display:inline;">
+        <button type="submit" class="btn btn-danger">Yes, Delete Permanently</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+#delete-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999;
+  display:flex; align-items:center; justify-content:center; padding:20px;
+}
+#delete-modal {
+  background:#fff; border-top:5px solid #c8102e; width:100%; max-width:460px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.25);
+}
+#delete-modal-header {
+  background:#c8102e; color:#fff; padding:13px 18px; font-weight:bold;
+  font-size:14px; display:flex; justify-content:space-between; align-items:center;
+}
+#modal-close-btn {
+  background:none; border:none; color:#fff; font-size:22px;
+  cursor:pointer; line-height:1; padding:0;
+}
+#delete-modal-body { padding:22px 20px 16px; text-align:center; }
+#delete-user-info {
+  background:#f8f9fb; border:1px solid #dde3ec;
+  border-left:4px solid #1a3a6b; text-align:left;
+}
+.du-row { display:flex; border-bottom:1px solid #eef1f5; font-size:13px; }
+.du-row:last-child { border-bottom:none; }
+.du-label {
+  width:80px; flex-shrink:0; background:#eef1f7;
+  padding:9px 12px; font-weight:bold; color:#1a3a6b;
+}
+.du-val { padding:9px 12px; color:#333; word-break:break-all; }
+#delete-modal-footer {
+  background:#f5f7fa; border-top:1px solid #dde3ec;
+  padding:14px 20px; display:flex; justify-content:flex-end; gap:10px;
+}
+</style>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// ── Staff form validation ───────────────────────────────────
+function validateStaffForm() {
+  var mobile = document.getElementById('staff-mobile').value.trim();
+  var pw     = document.getElementById('staff-password').value.trim();
+  var role   = document.getElementById('staff-role').value;
+  var err    = document.getElementById('staff-form-err');
+
+  if (!/^\d{10}$/.test(mobile)) {
+    err.textContent = 'Please enter a valid 10-digit mobile number.';
+    err.style.display = 'block';
+    document.getElementById('staff-mobile').focus();
+    return false;
+  }
+  if (pw.length < 6) {
+    err.textContent = 'Password must be at least 6 characters.';
+    err.style.display = 'block';
+    document.getElementById('staff-password').focus();
+    return false;
+  }
+  if (!role) {
+    err.textContent = 'Please select a role.';
+    err.style.display = 'block';
+    return false;
+  }
+  err.style.display = 'none';
+  return true;
+}
+
+// ── Delete Modal ────────────────────────────────────────────
+function showDeleteModal(userId, userName, userCid, userEmail) {
+  document.getElementById('del-name').textContent  = userName;
+  document.getElementById('del-cid').textContent   = userCid;
+  document.getElementById('del-email').textContent = userEmail;
+  document.getElementById('delete-form').action =
+    '/admin/user/' + userId + '/delete';
+  document.getElementById('delete-overlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDeleteModal() {
+  document.getElementById('delete-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('delete-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeDeleteModal();
+});
+</script>
+{% endblock %}
