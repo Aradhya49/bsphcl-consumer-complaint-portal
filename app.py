@@ -1,4 +1,12 @@
 import os
+
+import re
+
+# Fix PostgreSQL URL format for SQLAlchemy
+database_url = os.environ.get('DATABASE_URL', '')
+if database_url.startswith('postgres://'):
+    os.environ['DATABASE_URL'] = database_url.replace('postgres://', 'postgresql://', 1)
+    
 from flask import Flask
 from config import Config
 from extensions import db, mail, migrate
