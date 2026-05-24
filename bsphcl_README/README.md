@@ -4,16 +4,19 @@
 
 ---
 
-## 🌐 Live Demo
+# 🌐 Live Demo
 
-The project is live and accessible at:
+🚀 Click here to open the live website:
 
-[Live Demo](https://bsphcl-portal.onrender.com)
+## 👉 [BSPHCL Portal Live Demo](https://bsphcl-portal.onrender.com)
 
-> **Note:** This is hosted on Render free plan. The server may take 50–60 seconds to wake up on first visit if inactive. Please wait and refresh.
+> **Note:** This project is hosted on Render free plan.  
+> The server may take 50–60 seconds to wake up on first visit if inactive.  
+> Please wait and refresh if the site takes time to load.
 
+---
 
-## 📋 Table of Contents
+# 📋 Table of Contents
 
 - [About the Project](#about-the-project)
 - [Features](#features)
@@ -22,13 +25,17 @@ The project is live and accessible at:
 - [Setup Instructions](#setup-instructions)
 - [Running the Project](#running-the-project)
 - [Default Credentials](#default-credentials)
+- [Database Models](#database-models)
+- [Key URLs](#key-urls)
 - [Authors](#authors)
 
 ---
 
-## About the Project
+# About the Project
 
-Traditional electricity complaint systems at BSPHCL relied on phone calls, handwritten registers, and office visits — making them slow, inefficient, and difficult to track. This portal digitizes the entire complaint lifecycle:
+Traditional electricity complaint systems at BSPHCL relied on phone calls, handwritten registers, and office visits — making them slow, inefficient, and difficult to track.
+
+This portal digitizes the entire complaint lifecycle:
 
 - Consumers can register, file complaints, attach documents, and track status online
 - BSPHCL officials can manage, reply to, and resolve complaints from a central dashboard
@@ -36,9 +43,10 @@ Traditional electricity complaint systems at BSPHCL relied on phone calls, handw
 
 ---
 
-## Features
+# Features
 
-### Consumer (User) Portal
+## Consumer (User) Portal
+
 - Register with district selection (Bihar districts only)
 - Secure login with password show/hide
 - File complaints with category, subcategory, and file attachments
@@ -49,7 +57,10 @@ Traditional electricity complaint systems at BSPHCL relied on phone calls, handw
 - In-app notifications (admin reply, status change)
 - Help Desk with complaint tracker, FAQs, safety guidance
 
-### Admin Portal
+---
+
+## Admin Portal
+
 - Secure admin login (restricted access)
 - Dashboard with complaint statistics and charts
 - View, reply to, and update status of all complaints
@@ -58,7 +69,10 @@ Traditional electricity complaint systems at BSPHCL relied on phone calls, handw
 - In-app notifications (new complaint, new user, consumer reply)
 - Admin profile management with profile picture
 
-### Security
+---
+
+## Security
+
 - Passwords hashed using Werkzeug (scrypt)
 - Role-based access control (user / staff / admin)
 - Session management with Flask
@@ -67,211 +81,141 @@ Traditional electricity complaint systems at BSPHCL relied on phone calls, handw
 
 ---
 
-## Tech Stack
+# Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+|-------|------------|
 | Backend | Python 3.11, Flask 3.0 |
-| Database | MySQL 8.0, SQLAlchemy ORM |
-| Frontend | HTML5, CSS3 (custom government theme) |
-| Charts | Chart.js 3.9 |
-| Email | Flask-Mail, Gmail SMTP |
+| Database | PostgreSQL (Supabase), SQLAlchemy ORM |
+| Frontend | HTML5, CSS3 |
+| Charts | Chart.js |
+| Email | Flask-Mail |
 | PDF | pdfkit + wkhtmltopdf |
-| Migrations | Flask-Migrate |
+| Deployment | Render |
+| ORM | SQLAlchemy |
 
 ---
 
-## Project Structure
-
-```
-bsphcl_backend/
-│
-├── app.py                  ← Flask application factory
-├── config.py               ← Configuration (DB, mail, keys)
-├── extensions.py           ← Shared extensions (db, mail, migrate)
-├── models.py               ← Database models
-├── main_app.py             ← User-facing routes
-├── admin_routes.py         ← Admin routes
-├── notif_helpers.py        ← Notification helper functions
-├── utils.py                ← PDF, OTP, file upload helpers
-├── init_db.py              ← Database initialisation script
-├── requirements.txt        ← Python dependencies
-│
-├── static/
-│   ├── css/style.css       ← Government-style stylesheet
-│   ├── js/main.js          ← Frontend interactions
-│   └── uploads/
-│       └── profiles/       ← Profile pictures
-│
-└── templates/
-    ├── base.html           ← User base layout
-    ├── login.html
-    ├── register.html
-    ├── dashboard.html
-    ├── complaint_form.html
-    ├── complaint_history.html
-    ├── complaint_detail.html
-    ├── helpdesk.html
-    ├── notifications.html
-    ├── profile.html
-    ├── receipt_template.html
-    ├── forgot_password.html
-    ├── verify_otp.html
-    ├── reset_password.html
-    └── admin/
-        ├── base_admin.html
-        ├── login_admin.html
-        ├── dashboard_admin.html
-        ├── all_complaints.html
-        ├── complaint_detail_admin.html
-        ├── manage_users.html
-        ├── user_complaints.html
-        ├── notifications_admin.html
-        └── profile_admin.html
-```
-
----
-
-## Setup Instructions
-
-### Prerequisites
-- Python 3.10 or 3.11
-- MySQL Server 8.0
-- wkhtmltopdf (for PDF generation) — [Download here](https://wkhtmltopdf.org/downloads.html)
-- Git
-
-### 1. Clone the Repository
+# Project Structure
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/bsphcl-complaint-portal.git
-cd bsphcl-complaint-portal
+bsphcl_backend/
+│
+├── app.py
+├── config.py
+├── extensions.py
+├── models.py
+├── main_app.py
+├── admin_routes.py
+├── notif_helpers.py
+├── utils.py
+├── requirements.txt
+│
+├── static/
+├── templates/
+└── venv/
 ```
 
-### 2. Create Virtual Environment
+---
+
+# Setup Instructions
+
+## 1. Clone Repository
+
+```bash
+git clone https://github.com/Aradhya49/bsphcl-consumer-complaint-portal.git
+cd bsphcl-consumer-complaint-portal
+```
+
+---
+
+## 2. Create Virtual Environment
 
 ```bash
 python -m venv venv
+```
 
-# Windows
+Activate:
+
+### Windows
+
+```bash
 venv\Scripts\activate
+```
 
-# Linux / macOS
+### Linux / macOS
+
+```bash
 source venv/bin/activate
 ```
 
-### 3. Install Dependencies
+---
+
+## 3. Install Requirements
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Create MySQL Database
+---
 
-Open MySQL Workbench and run:
+## 4. Configure Environment Variables
 
-```sql
-CREATE DATABASE consumer_portal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+Update your database and mail credentials.
 
-### 5. Configure the Application
+---
 
-Open `config.py` and update:
-
-```python
-# Database
-SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:YOUR_PASSWORD@localhost/consumer_portal'
-
-# Gmail SMTP (use App Password, not regular password)
-MAIL_USERNAME = 'your_email@gmail.com'
-MAIL_PASSWORD = 'your_gmail_app_password'
-
-# Secret keys
-SECRET_KEY    = 'your-secret-key'
-ADMIN_SECRET  = 'BSPHCL-ADMIN-SECRET'
-```
-
-### 6. Initialise Database
-
-```bash
-python init_db.py
-```
-
-### 7. Run the Application
+## 5. Run the Project
 
 ```bash
 python app.py
 ```
 
-Open browser: **http://127.0.0.1:5002**
+Open:
+
+```text
+http://127.0.0.1:5000
+```
 
 ---
 
-## Running the Project
 
-Every time you want to run the project:
-
-```bash
-cd bsphcl_backend
-venv\Scripts\activate
-python app.py
-```
-
-To stop the server: **Ctrl + C**
-
----
-
-## Default Credentials
-
-### Admin Login
-```
-URL      : http://127.0.0.1:5002/admin/login
-Email    : Bsphcl_admin@bsphcl.co.in
-Password : Admin@2025
-```
-
-### Consumer Login
-Register first at: `http://127.0.0.1:5002/register`
-
----
-
-## Database Models
+# Database Models
 
 | Table | Description |
-|-------|-------------|
-| `users` | Consumers, staff, and admin accounts |
-| `complaints` | All complaints filed by consumers |
-| `replies` | Conversation thread (admin ↔ consumer) |
-| `notifications` | In-app notifications for all users |
+|------|-------------|
+| users | Consumer, staff, admin accounts |
+| complaints | Consumer complaints |
+| replies | Complaint conversation |
+| notifications | Notification system |
 
 ---
 
-## Key URLs
+# Key URLs
 
-### User Portal
+## User Portal
+
 | URL | Description |
 |-----|-------------|
-| `/` | Home (redirects to login) |
 | `/register` | Consumer registration |
-| `/login` | Consumer login |
-| `/dashboard` | Consumer dashboard |
-| `/complaint` | File a new complaint |
-| `/complaint-history` | View all complaints |
-| `/helpdesk` | Help desk, FAQs, complaint tracker |
-| `/notifications` | In-app notifications |
+| `/login` | User login |
+| `/dashboard` | User dashboard |
+| `/complaint-history` | Complaint history |
 | `/profile` | User profile |
 
-### Admin Portal
+---
+
+## Admin Portal
+
 | URL | Description |
 |-----|-------------|
 | `/admin/login` | Admin login |
 | `/admin/dashboard` | Admin dashboard |
-| `/admin/complaints` | All complaints |
-| `/admin/users` | Manage users and staff |
-| `/admin/notifications` | Admin notifications |
-| `/admin/profile` | Admin profile |
+| `/admin/complaints` | Complaint management |
 
 ---
 
-## Authors
+# Authors
 
-Aradhya Priya
+### Aradhya Priya
+
