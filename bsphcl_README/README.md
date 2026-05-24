@@ -8,7 +8,7 @@
 
 The project is live and accessible at:
 
-https://bsphcl-portal.onrender.com
+[Live Demo](https://bsphcl-portal.onrender.com)
 
 > **Note:** This is hosted on Render free plan. The server may take 50–60 seconds to wake up on first visit if inactive. Please wait and refresh.
 
