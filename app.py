@@ -1,5 +1,4 @@
 import os
-
 import re
 
 # Fix PostgreSQL URL format for SQLAlchemy
@@ -41,7 +40,7 @@ def create_app(config_class=Config):
     return app
 
 
-# ── Load .env file for local development ─────────────────────
+# Load .env file for local development
 def load_env():
     env_path = os.path.join(os.path.dirname(__file__), '.env')
     if os.path.exists(env_path):
@@ -56,10 +55,10 @@ def load_env():
 load_env()
 app = create_app()
 
-
+# Auto-create tables on startup (needed for Render deployment)
 with app.app_context():
-        db.create_all()
-        print('[BSPHCL] Database tables created.')
+    db.create_all()
+    print('[BSPHCL] Database tables created.')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
