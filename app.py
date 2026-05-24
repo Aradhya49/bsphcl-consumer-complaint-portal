@@ -6,7 +6,7 @@ import re
 database_url = os.environ.get('DATABASE_URL', '')
 if database_url.startswith('postgres://'):
     os.environ['DATABASE_URL'] = database_url.replace('postgres://', 'postgresql://', 1)
-    
+
 from flask import Flask
 from config import Config
 from extensions import db, mail, migrate
@@ -56,8 +56,10 @@ def load_env():
 load_env()
 app = create_app()
 
-if __name__ == '__main__':
-    with app.app_context():
+
+with app.app_context():
         db.create_all()
         print('[BSPHCL] Database tables created.')
+
+if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
